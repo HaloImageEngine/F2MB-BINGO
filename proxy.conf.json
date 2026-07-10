@@ -1,0 +1,11 @@
+{
+  "/gogi-api": {
+    "target": "https://api.getgogi.com",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "warn",
+    "pathRewrite": {
+      "^/gogi-api": ""
+    }
+  }
+}

@@ -1,0 +1,324 @@
+<section class="sponsor-page">
+  <header class="sponsor-page__header surface-card">
+    <p class="sponsor-page__eyebrow">Print setup</p>
+    <h1>Sponsor &amp; Ad Spaces</h1>
+    <p class="sponsor-page__copy">
+      Configure the sponsor banner and three footer QR / ad spaces used on Slide Cards and printed
+      bingo tickets. Changes apply immediately on Slide Cards.
+    </p>
+    <div class="sponsor-page__user-top" *ngIf="currentUser() as user">
+      <span><strong>UserAlias:</strong> {{ user.UserAlias || '—' }}</span>
+      <span><strong>UserId:</strong> {{ user.UserId }}</span>
+    </div>
+  </header>
+
+  <section class="sponsor-page__form surface-card">
+    <label class="sponsor-page__field" for="sponsor-page-banner-text">
+      <span>Sponsor Banner</span>
+      <input
+        id="sponsor-page-banner-text"
+        type="text"
+        class="sponsor-page__input"
+        [value]="sponsorSettings.sponsorBannerText()"
+        (input)="sponsorSettings.updateSponsorBannerText($event)"
+        placeholder="Enter sponsor banner text"
+        autocomplete="off"
+      />
+    </label>
+  </section>
+
+  <section class="surface-card slidecardsw-status" *ngIf="loadingSponsors()">
+    <p>Loading saved ad spaces…</p>
+  </section>
+
+  <section class="surface-card slidecardsw-status slidecardsw-status--error" *ngIf="loadSponsorsError() as loadErr">
+    <p>{{ loadErr }}</p>
+    <button type="button" class="sponsor-page__save-btn" (click)="loadLatestSponsors()">Retry</button>
+  </section>
+
+  <section class="sponsor-page__ad-settings surface-card" *ngIf="!loadingSponsors()">
+    <div class="sponsor-page__ad-grid">
+      <div class="sponsor-page__ad-slot">
+        <p class="sponsor-page__ad-slot-label">Ad space 1 · AD1</p>
+        <label class="sponsor-page__field" for="sponsor-page-qr-label-1">
+          <span>Label</span>
+          <input
+            id="sponsor-page-qr-label-1"
+            type="text"
+            class="sponsor-page__input"
+            [value]="qrSettings.qrLabel1()"
+            (input)="qrSettings.updateQrLabel(0, $event)"
+            placeholder="Ad space 1"
+          />
+        </label>
+        <label class="sponsor-page__field" for="sponsor-page-qr-link-1">
+          <span>Link</span>
+          <input
+            id="sponsor-page-qr-link-1"
+            type="text"
+            class="sponsor-page__input"
+            [value]="qrSettings.qrLink1()"
+            (input)="qrSettings.updateQrLink(0, $event)"
+            placeholder="https://ad.link.com"
+          />
+        </label>
+        <label class="sponsor-page__field" for="sponsor-page-qr-contact-1">
+          <span>Contact</span>
+          <input
+            id="sponsor-page-qr-contact-1"
+            type="text"
+            class="sponsor-page__input"
+            [value]="qrSettings.qrContact1()"
+            (input)="qrSettings.updateQrContact(0, $event)"
+            placeholder="Contact name"
+            autocomplete="off"
+          />
+        </label>
+        <label class="sponsor-page__field" for="sponsor-page-qr-phone-1">
+          <span>Phone</span>
+          <input
+            id="sponsor-page-qr-phone-1"
+            type="tel"
+            class="sponsor-page__input"
+            [value]="qrSettings.qrPhone1()"
+            (input)="qrSettings.updateQrPhone(0, $event)"
+            placeholder="###-###-####"
+            maxlength="12"
+            inputmode="numeric"
+            autocomplete="tel"
+          />
+        </label>
+        <label class="sponsor-page__field" for="sponsor-page-qr-contact-url-1">
+          <span>ContactURL</span>
+          <input
+            id="sponsor-page-qr-contact-url-1"
+            type="text"
+            class="sponsor-page__input"
+            [value]="qrSettings.qrContactUrl1()"
+            (input)="qrSettings.updateQrContactUrl(0, $event)"
+            placeholder="https://example.com/contact"
+            autocomplete="off"
+          />
+        </label>
+        <label class="sponsor-page__field" for="sponsor-page-qr-image-1">
+          <span>Image (optional)</span>
+          <input
+            id="sponsor-page-qr-image-1"
+            type="file"
+            class="sponsor-page__input sponsor-page__file"
+            accept="image/*"
+            (change)="qrSettings.onQrImageFileSelected(0, $event)"
+          />
+        </label>
+        <p class="sponsor-page__ad-meta" *ngIf="qrSettings.qrId1() > 0">QRID {{ qrSettings.qrId1() }}</p>
+        <button
+          type="button"
+          class="sponsor-page__save-btn"
+          (click)="saveAdSpace(0)"
+          [disabled]="isSavingSlot(0)"
+        >
+          {{ isSavingSlot(0) ? 'Saving…' : 'Save AD1' }}
+        </button>
+        <p class="sponsor-page__ad-error" *ngIf="slotError(0) as err">{{ err }}</p>
+        <p class="sponsor-page__ad-success" *ngIf="slotSuccessMessage(0) as ok">{{ ok }}</p>
+      </div>
+
+      <div class="sponsor-page__ad-slot">
+        <p class="sponsor-page__ad-slot-label">Ad space 2 · AD2</p>
+        <label class="sponsor-page__field" for="sponsor-page-qr-label-2">
+          <span>Label</span>
+          <input
+            id="sponsor-page-qr-label-2"
+            type="text"
+            class="sponsor-page__input"
+            [value]="qrSettings.qrLabel2()"
+            (input)="qrSettings.updateQrLabel(1, $event)"
+            placeholder="Ad space 2"
+          />
+        </label>
+        <label class="sponsor-page__field" for="sponsor-page-qr-link-2">
+          <span>Link</span>
+          <input
+            id="sponsor-page-qr-link-2"
+            type="text"
+            class="sponsor-page__input"
+            [value]="qrSettings.qrLink2()"
+            (input)="qrSettings.updateQrLink(1, $event)"
+            placeholder="https://ad.link.com"
+          />
+        </label>
+        <label class="sponsor-page__field" for="sponsor-page-qr-contact-2">
+          <span>Contact</span>
+          <input
+            id="sponsor-page-qr-contact-2"
+            type="text"
+            class="sponsor-page__input"
+            [value]="qrSettings.qrContact2()"
+            (input)="qrSettings.updateQrContact(1, $event)"
+            placeholder="Contact name"
+            autocomplete="off"
+          />
+        </label>
+        <label class="sponsor-page__field" for="sponsor-page-qr-phone-2">
+          <span>Phone</span>
+          <input
+            id="sponsor-page-qr-phone-2"
+            type="tel"
+            class="sponsor-page__input"
+            [value]="qrSettings.qrPhone2()"
+            (input)="qrSettings.updateQrPhone(1, $event)"
+            placeholder="###-###-####"
+            maxlength="12"
+            inputmode="numeric"
+            autocomplete="tel"
+          />
+        </label>
+        <label class="sponsor-page__field" for="sponsor-page-qr-contact-url-2">
+          <span>ContactURL</span>
+          <input
+            id="sponsor-page-qr-contact-url-2"
+            type="text"
+            class="sponsor-page__input"
+            [value]="qrSettings.qrContactUrl2()"
+            (input)="qrSettings.updateQrContactUrl(1, $event)"
+            placeholder="https://example.com/contact"
+            autocomplete="off"
+          />
+        </label>
+        <label class="sponsor-page__field" for="sponsor-page-qr-image-2">
+          <span>Image (optional)</span>
+          <input
+            id="sponsor-page-qr-image-2"
+            type="file"
+            class="sponsor-page__input sponsor-page__file"
+            accept="image/*"
+            (change)="qrSettings.onQrImageFileSelected(1, $event)"
+          />
+        </label>
+        <p class="sponsor-page__ad-meta" *ngIf="qrSettings.qrId2() > 0">QRID {{ qrSettings.qrId2() }}</p>
+        <button
+          type="button"
+          class="sponsor-page__save-btn"
+          (click)="saveAdSpace(1)"
+          [disabled]="isSavingSlot(1)"
+        >
+          {{ isSavingSlot(1) ? 'Saving…' : 'Save AD2' }}
+        </button>
+        <p class="sponsor-page__ad-error" *ngIf="slotError(1) as err">{{ err }}</p>
+        <p class="sponsor-page__ad-success" *ngIf="slotSuccessMessage(1) as ok">{{ ok }}</p>
+      </div>
+
+      <div class="sponsor-page__ad-slot">
+        <p class="sponsor-page__ad-slot-label">Ad space 3 · AD3</p>
+        <label class="sponsor-page__field" for="sponsor-page-qr-label-3">
+          <span>Label</span>
+          <input
+            id="sponsor-page-qr-label-3"
+            type="text"
+            class="sponsor-page__input"
+            [value]="qrSettings.qrLabel3()"
+            (input)="qrSettings.updateQrLabel(2, $event)"
+            placeholder="Ad space 3"
+          />
+        </label>
+        <label class="sponsor-page__field" for="sponsor-page-qr-link-3">
+          <span>Link</span>
+          <input
+            id="sponsor-page-qr-link-3"
+            type="text"
+            class="sponsor-page__input"
+            [value]="qrSettings.qrLink3()"
+            (input)="qrSettings.updateQrLink(2, $event)"
+            placeholder="https://ad.link.com"
+          />
+        </label>
+        <label class="sponsor-page__field" for="sponsor-page-qr-contact-3">
+          <span>Contact</span>
+          <input
+            id="sponsor-page-qr-contact-3"
+            type="text"
+            class="sponsor-page__input"
+            [value]="qrSettings.qrContact3()"
+            (input)="qrSettings.updateQrContact(2, $event)"
+            placeholder="Contact name"
+            autocomplete="off"
+          />
+        </label>
+        <label class="sponsor-page__field" for="sponsor-page-qr-phone-3">
+          <span>Phone</span>
+          <input
+            id="sponsor-page-qr-phone-3"
+            type="tel"
+            class="sponsor-page__input"
+            [value]="qrSettings.qrPhone3()"
+            (input)="qrSettings.updateQrPhone(2, $event)"
+            placeholder="###-###-####"
+            maxlength="12"
+            inputmode="numeric"
+            autocomplete="tel"
+          />
+        </label>
+        <label class="sponsor-page__field" for="sponsor-page-qr-contact-url-3">
+          <span>ContactURL</span>
+          <input
+            id="sponsor-page-qr-contact-url-3"
+            type="text"
+            class="sponsor-page__input"
+            [value]="qrSettings.qrContactUrl3()"
+            (input)="qrSettings.updateQrContactUrl(2, $event)"
+            placeholder="https://example.com/contact"
+            autocomplete="off"
+          />
+        </label>
+        <label class="sponsor-page__field" for="sponsor-page-qr-image-3">
+          <span>Image (optional)</span>
+          <input
+            id="sponsor-page-qr-image-3"
+            type="file"
+            class="sponsor-page__input sponsor-page__file"
+            accept="image/*"
+            (change)="qrSettings.onQrImageFileSelected(2, $event)"
+          />
+        </label>
+        <p class="sponsor-page__ad-meta" *ngIf="qrSettings.qrId3() > 0">QRID {{ qrSettings.qrId3() }}</p>
+        <button
+          type="button"
+          class="sponsor-page__save-btn"
+          (click)="saveAdSpace(2)"
+          [disabled]="isSavingSlot(2)"
+        >
+          {{ isSavingSlot(2) ? 'Saving…' : 'Save AD3' }}
+        </button>
+        <p class="sponsor-page__ad-error" *ngIf="slotError(2) as err">{{ err }}</p>
+        <p class="sponsor-page__ad-success" *ngIf="slotSuccessMessage(2) as ok">{{ ok }}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="sponsor-page__preview surface-card" aria-live="polite">
+    <h2>Preview on card</h2>
+    <p class="sponsor-page__preview-note">Approximate layout of the sponsor banner and footer QR row on printed bingo cards.</p>
+
+    <div class="sponsor-page__preview-mock">
+      <div class="sponsor-page__preview-banner">
+        <span class="sponsor-page__preview-banner-text">{{ sponsorSettings.sponsorBannerText() }}</span>
+        <span class="sponsor-page__preview-banner-gci">Call list ID · Inning</span>
+      </div>
+
+      <div class="sponsor-page__preview-footer">
+        <div class="sponsor-page__preview-qr">
+          <img [src]="qrSettings.qrImageUrls()[0]" [alt]="'QR 1: ' + qrSettings.qrLink1()" />
+          <span class="sponsor-page__preview-qr-label">{{ qrSettings.qrLabel1() }}</span>
+        </div>
+        <div class="sponsor-page__preview-qr">
+          <img [src]="qrSettings.qrImageUrls()[1]" [alt]="'QR 2: ' + qrSettings.qrLink2()" />
+          <span class="sponsor-page__preview-qr-label">{{ qrSettings.qrLabel2() }}</span>
+        </div>
+        <div class="sponsor-page__preview-qr">
+          <img [src]="qrSettings.qrImageUrls()[2]" [alt]="'QR 3: ' + qrSettings.qrLink3()" />
+          <span class="sponsor-page__preview-qr-label">{{ qrSettings.qrLabel3() }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</section>

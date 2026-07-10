@@ -1,0 +1,812 @@
+<section class="game-master-page">
+  <header class="game-master-page__header">
+    <section class="game-master-page__hero">
+      <a routerLink="/console" class="game-master-page__back">&larr; Back to Console</a>
+      <h1>Game Master</h1>
+      <p class="game-master-page__copy">
+        Set Game_ID, Call_List_ID, and Inning, then load the game context. Values are stored in local storage for
+        Console, Card Master, and slide views.
+      </p>
+    </section>
+  </header>
+
+  <section class="game-master-controls">
+    <section class="game-master-controls__grid">
+      <label class="game-master-field">
+        <span>Game_ID</span>
+        <input
+          type="number"
+          min="1"
+          step="1"
+          [ngModel]="gameIdDraft()"
+          (ngModelChange)="onGameIdDraftInput($event)"
+          (blur)="commitGameIdFromDraft()"
+          (keydown.enter)="commitGameIdFromDraft(); $event.preventDefault()"
+          aria-label="Game ID" />
+      </label>
+      <label class="game-master-field">
+        <span>Call List ID</span>
+        <app-call-list-id-field
+          [value]="callListId()"
+          (valueChange)="setCallListIdFromInput($event)"
+          ariaLabel="Call List ID from your account" />
+      </label>
+      <label class="game-master-field">
+        <span>Inning</span>
+        <input
+          type="number"
+          min="1"
+          step="1"
+          [ngModel]="inningDraft()"
+          (ngModelChange)="onInningDraftInput($event)"
+          (blur)="commitInningFromDraft()"
+          (keydown.enter)="commitInningFromDraft(); $event.preventDefault()"
+          aria-label="Inning" />
+      </label>
+      <section class="game-master-controls__actions">
+        <button
+          type="button"
+          class="game-master-btn game-master-btn--primary"
+          (click)="loadGame()"
+          [disabled]="loading()">
+          {{ loading() ? 'Loading…' : 'Load Game' }}
+        </button>
+        <section class="game-master-max-ids" aria-label="Maximum IDs">
+          <div class="game-master-max-ids__stat">
+            <span class="game-master-max-ids__value">
+              {{ maxGameIdLoading() && maxGameIdFromApi() === null ? '…' : (maxGameIdFromApi() ?? '—') }}
+            </span>
+            <span class="game-master-max-ids__label">Max Game ID</span>
+          </div>
+          <div class="game-master-max-ids__stat">
+            <span class="game-master-max-ids__value">
+              {{ callListDefaultsLoading() && maxCallListIdFromApi() === null ? '…' : (maxCallListIdFromApi() ?? '—') }}
+            </span>
+            <span class="game-master-max-ids__label">Max CallList ID</span>
+          </div>
+        </section>
+      </section>
+    </section>
+    <p class="game-master-controls__hint">
+      Stored key: <code>bingo_console_context_v1</code> (Game_ID, Call_List_ID, Inning).
+    </p>
+  </section>
+
+  <section class="game-master-insert surface-card" aria-labelledby="game-master-insert-heading">
+    <header class="game-master-insert__head">
+      <div class="game-master-insert__title-block">
+        <h2 id="game-master-insert-heading">Insert / Edit Games</h2>
+        <p class="game-master-insert__copy">
+          Load an existing game to edit, or set Game_ID above your max to insert a new game.
+        </p>
+      </div>
+      <div class="game-master-insert__account-meta">
+        @if (callListDefaultsLoading()) {
+          <span class="game-master-insert__account-meta-label">Latest for your account</span>
+          <span class="game-master-insert__account-meta-value">Loading…</span>
+        } @else if (maxCallListIdFromApi() !== null) {
+          <span class="game-master-insert__account-meta-label">Latest for your account</span>
+          <span class="game-master-insert__account-meta-value">{{ maxCallListIdFromApi() }}</span>
+        }
+      </div>
+    </header>
+
+    <form class="game-master-insert__form" (ngSubmit)="insertNewGame()">
+      <div class="game-master-insert__grid">
+        <label class="game-master-field">
+          <span>User_ID</span>
+          <input
+            type="number"
+            min="1"
+            step="1"
+            [ngModel]="insertUserId()"
+            (ngModelChange)="setInsertUserIdFromInput($event)"
+            name="insertUserId"
+            placeholder="1038"
+            aria-label="User ID" />
+        </label>
+        <label class="game-master-field game-master-field--wide">
+          <span>Call_List_ID</span>
+          <app-call-list-id-field
+            [value]="insertCallListIdValue()"
+            (valueChange)="setInsertCallListIdFromInput($event)"
+            [placeholder]="'' + (maxCallListIdFromApi() ?? 7)"
+            ariaLabel="Call List ID for new game" />
+        </label>
+        <label class="game-master-field">
+          <span>Game_Number</span>
+          <input
+            type="number"
+            min="1"
+            step="1"
+            [ngModel]="insertGameNumber()"
+            (ngModelChange)="setInsertGameNumberFromInput($event)"
+            name="insertGameNumber"
+            placeholder="2"
+            aria-label="Game Number" />
+        </label>
+        <label class="game-master-field">
+          <span>Game_Inning</span>
+          <input
+            type="number"
+            min="1"
+            step="1"
+            [ngModel]="insertGameInning()"
+            (ngModelChange)="setInsertGameInningFromInput($event)"
+            name="insertGameInning"
+            placeholder="4"
+            aria-label="Game Inning" />
+        </label>
+        <label class="game-master-field game-master-field--wide">
+          <span>Game_Name</span>
+          <input
+            type="text"
+            [ngModel]="insertGameName()"
+            (ngModelChange)="setInsertGameNameFromInput($event)"
+            name="insertGameName"
+            placeholder="CL 7 "
+            aria-label="Game Name" />
+        </label>
+        <label class="game-master-field game-master-field--wide">
+          <span>Game_StartTime</span>
+          <input
+            type="text"
+            [ngModel]="insertGameStartTime()"
+            (ngModelChange)="setInsertGameStartTimeFromInput($event)"
+            name="insertGameStartTime"
+            placeholder="2026-05-31T20:52:20.066Z"
+            aria-label="Game Start Time" />
+        </label>
+        <label class="game-master-field game-master-field--wide">
+          <span>Game_EndTime</span>
+          <input
+            type="text"
+            [ngModel]="insertGameEndTime()"
+            (ngModelChange)="setInsertGameEndTimeFromInput($event)"
+            name="insertGameEndTime"
+            placeholder="2026-05-31T20:52:20.066Z"
+            aria-label="Game End Time" />
+        </label>
+        <label class="game-master-field">
+          <span>Game_WinPattern</span>
+          <input
+            type="text"
+            [ngModel]="insertGameWinPattern()"
+            (ngModelChange)="setInsertGameWinPatternFromInput($event)"
+            name="insertGameWinPattern"
+            placeholder="Line"
+            aria-label="Win pattern" />
+        </label>
+        <label class="game-master-field">
+          <span>Game_WinnerCard_ID</span>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            [ngModel]="insertWinnerCardId()"
+            (ngModelChange)="setInsertWinnerCardIdFromInput($event)"
+            name="insertWinnerCardId"
+            placeholder="0"
+            aria-label="Winner Card ID" />
+        </label>
+        <label class="game-master-field">
+          <span>Game_Status</span>
+          <select
+            [ngModel]="insertGameStatus()"
+            (ngModelChange)="setInsertGameStatusFromInput($event)"
+            name="insertGameStatus"
+            aria-label="Game status">
+            <option value="Pending">Pending</option>
+            <option value="Active">Active</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="game-master-insert__toolbar">
+        <button type="button" class="game-master-btn game-master-btn--secondary" (click)="useNowForInsertTimes()">
+          Use now for times
+        </button>
+        <button
+          type="button"
+          class="game-master-btn game-master-btn--secondary"
+          (click)="updateGame()"
+          [disabled]="updatingGame() || !canUpdateGame()">
+          {{ updatingGame() ? 'Updating…' : 'Update' }}
+        </button>
+        <button
+          type="submit"
+          class="game-master-btn game-master-btn--primary"
+          [disabled]="insertingNewGame() || !canInsertNewGame()">
+          {{ insertingNewGame() ? 'Inserting…' : 'Insert' }}
+        </button>
+      </div>
+    </form>
+
+    @if (!canUpdateGame() && !canInsertNewGame()) {
+      <p class="game-master-insert__hint">
+        @if (isNewGameSlot()) {
+          Insert requires Game_ID greater than your max ({{ maxGameIdFromApi() ?? '—' }}).
+          Required: User_ID, Call_List_ID, Game_Number, Game_Inning, Game_StartTime.
+        } @else if (!hasLoaded()) {
+          Update requires Load Game first when Game_ID is at or below your max ({{ maxGameIdFromApi() ?? '—' }}).
+        } @else {
+          Complete Call_List_ID, Game_Number, Game_Inning, and Game_StartTime before saving.
+        }
+      </p>
+    }
+
+    @if (insertNewGameError(); as insertErr) {
+      <p class="game-master-message game-master-message--error">{{ insertErr }}</p>
+    }
+    @if (insertNewGameSuccess(); as insertOk) {
+      <p class="game-master-message game-master-message--success">{{ insertOk }}</p>
+    }
+  </section>
+
+  @if (error(); as err) {
+    <p class="game-master-message game-master-message--error">{{ err }}</p>
+  }
+  @if (!error() && loadMessage(); as msg) {
+    <p class="game-master-message game-master-message--success">{{ msg }}</p>
+  }
+
+  @if (hasLoaded()) {
+    <section class="game-master-results">
+      <header class="game-master-results__head">
+        <h2>Game</h2>
+      </header>
+
+      <section class="game-master-tabs">
+        <section class="game-master-tabs__bar" role="tablist" aria-label="Game master views">
+          <button
+            type="button"
+            class="game-master-tabs__tab"
+            role="tab"
+            id="game-master-tab-gameInfo"
+            [class.is-active]="activeTab() === 'gameInfo'"
+            [attr.aria-selected]="activeTab() === 'gameInfo'"
+            aria-controls="game-master-panel-gameInfo"
+            (click)="selectTab('gameInfo')">
+            Game Setup
+          </button>
+          <button
+            type="button"
+            class="game-master-tabs__tab"
+            role="tab"
+            id="game-master-tab-gameResults"
+            [class.is-active]="activeTab() === 'gameResults'"
+            [attr.aria-selected]="activeTab() === 'gameResults'"
+            aria-controls="game-master-panel-gameResults"
+            (click)="selectTab('gameResults')">
+            Game Results
+          </button>
+          <button
+            type="button"
+            class="game-master-tabs__tab"
+            role="tab"
+            id="game-master-tab-gameWinners"
+            [class.is-active]="activeTab() === 'gameWinners'"
+            [attr.aria-selected]="activeTab() === 'gameWinners'"
+            aria-controls="game-master-panel-gameWinners"
+            (click)="selectTab('gameWinners')">
+            Game Winners
+          </button>
+        </section>
+
+        @if (activeTab() === 'gameInfo') {
+          <section
+            class="game-master-tabs__panel"
+            id="game-master-panel-gameInfo"
+            role="tabpanel"
+            aria-labelledby="game-master-tab-gameInfo">
+            <p class="game-master-tabs__intro">Active GCI from storage; setup check from <code>Check/Check_GameSetup</code>.</p>
+            <section class="game-master-context-summary">
+              <section class="game-master-context-summary__item">
+                <span class="game-master-context-summary__label">Game ID</span>
+                <span class="game-master-context-summary__value">{{ gameId() }}</span>
+              </section>
+              <section class="game-master-context-summary__item">
+                <span class="game-master-context-summary__label">Call List ID</span>
+                <span class="game-master-context-summary__value">{{ callListId() ?? '—' }}</span>
+              </section>
+              <section class="game-master-context-summary__item">
+                <span class="game-master-context-summary__label">Inning</span>
+                <span class="game-master-context-summary__value">{{ inning() }}</span>
+              </section>
+            </section>
+
+            @if (setupError(); as setupErr) {
+              <p class="game-master-message game-master-message--error">{{ setupErr }}</p>
+            }
+            @if (setupLoading()) {
+              <p class="game-master-setup-loading">Loading game setup check…</p>
+            }
+            @if (!setupLoading() && gameSetup(); as setup) {
+              <section class="game-master-setup-data">
+                <section class="game-master-setup-block">
+                  <h3 class="game-master-setup-block__title">Header</h3>
+                  <dl class="game-master-kv">
+                    <dt>Game_ID_Checked</dt>
+                    <dd>{{ setup.Header.Game_ID_Checked }}</dd>
+                    <dt>User_ID_Found</dt>
+                    <dd>{{ formatValue(setup.Header.User_ID_Found) }}</dd>
+                    <dt>Call_List_ID_Found</dt>
+                    <dd>{{ formatValue(setup.Header.Call_List_ID_Found) }}</dd>
+                    <dt>Check_Timestamp</dt>
+                    <dd>{{ setup.Header.Check_Timestamp ? (setup.Header.Check_Timestamp | date: 'medium') : '—' }}</dd>
+                  </dl>
+                </section>
+
+                <section class="game-master-setup-block">
+                  <h3 class="game-master-setup-block__title">Overall summary</h3>
+                  <p
+                    class="game-master-setup-summary__sync"
+                    [class.is-pass]="validationStatusClass(setup.OverallSummary.Inning_Sync_Status) === 'is-pass'"
+                    [class.is-warn]="validationStatusClass(setup.OverallSummary.Inning_Sync_Status) === 'is-warn'"
+                    [class.is-fail]="validationStatusClass(setup.OverallSummary.Inning_Sync_Status) === 'is-fail'">
+                    {{ formatValue(setup.OverallSummary.Inning_Sync_Status) }}
+                  </p>
+                  <dl class="game-master-kv">
+                    <dt>Game_ID</dt>
+                    <dd>{{ formatValue(setup.OverallSummary.Game_ID) }}</dd>
+                    <dt>User_ID</dt>
+                    <dd>{{ formatValue(setup.OverallSummary.User_ID) }}</dd>
+                    <dt>Call_List_ID</dt>
+                    <dd>{{ formatValue(setup.OverallSummary.Call_List_ID) }}</dd>
+                    <dt>User games</dt>
+                    <dd>{{ formatValue(setup.OverallSummary.User_Game_Count ?? setup.OverallSummary.GameNight_Records) }}</dd>
+                    <dt>Game_Records</dt>
+                    <dd>{{ formatValue(setup.OverallSummary.Game_Records) }}</dd>
+                    <dt>CallList_Master_Innings</dt>
+                    <dd>{{ formatValue(setup.OverallSummary.CallList_Master_Innings) }}</dd>
+                    <dt>Songs_Innings</dt>
+                    <dd>{{ formatValue(setup.OverallSummary.Songs_Innings) }}</dd>
+                    <dt>Cards_Innings</dt>
+                    <dd>{{ formatValue(setup.OverallSummary.Cards_Innings) }}</dd>
+                    <dt>Total_Songs</dt>
+                    <dd>{{ formatValue(setup.OverallSummary.Total_Songs) }}</dd>
+                    <dt>Total_Cards</dt>
+                    <dd>{{ formatValue(setup.OverallSummary.Total_Cards) }}</dd>
+                  </dl>
+                </section>
+
+                <section class="game-master-setup-block">
+                  <h3 class="game-master-setup-block__title">Game (User) rows ({{ setup.GameNightRows.length }})</h3>
+                  @if (setup.GameNightRows.length === 0) {
+                    <p class="game-master-setup-empty">No rows.</p>
+                  } @else {
+                    <section class="game-master-table-wrap">
+                      <table class="game-master-table">
+                        <thead>
+                          <tr>
+                            <th>Game_ID</th>
+                            <th>User_ID</th>
+                            <th>Game #</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Flag</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (row of setup.GameNightRows; track trackByGameNightRow($index, row)) {
+                            <tr>
+                              <td>{{ formatValue(row.Game_ID) }}</td>
+                              <td>{{ formatValue(row.User_ID ?? row.GN_ID) }}</td>
+                              <td>{{ formatValue(row.Game_Number) }}</td>
+                              <td>{{ formatValue(row.Game_Name ?? row.GN_Name) }}</td>
+                              <td>{{ formatValue(row.Game_Status) }}</td>
+                              <td>{{ row.Game_CreatedAt ? (row.Game_CreatedAt | date: 'mediumDate') : (row.GN_Date ? (row.GN_Date | date: 'mediumDate') : '—') }}</td>
+                              <td class="game-master-status-cell {{ validationStatusClass(row.Status) }}">
+                                {{ formatValue(row.Status) }}
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </section>
+                  }
+                </section>
+
+                <section class="game-master-setup-block">
+                  <h3 class="game-master-setup-block__title">Game rows ({{ setup.GameRows.length }})</h3>
+                  @if (setup.GameRows.length === 0) {
+                    <p class="game-master-setup-empty">No rows.</p>
+                  } @else {
+                    <section class="game-master-table-wrap">
+                      <table class="game-master-table">
+                        <thead>
+                          <tr>
+                            <th>Game_ID</th>
+                            <th>User_ID</th>
+                            <th>CLID</th>
+                            <th>Inning</th>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Win pattern</th>
+                            <th>Start</th>
+                            <th>End</th>
+                            <th>Row status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (row of setup.GameRows; track row.Game_ID) {
+                            <tr>
+                              <td>{{ row.Game_ID }}</td>
+                              <td>{{ formatValue(row.User_ID ?? row.GN_ID) }}</td>
+                              <td>{{ formatValue(row.Call_List_ID) }}</td>
+                              <td>{{ formatValue(row.Game_Inning) }}</td>
+                              <td>{{ formatValue(row.Game_Number) }}</td>
+                              <td>{{ formatValue(row.Game_Name) }}</td>
+                              <td>{{ formatValue(row.Game_Status) }}</td>
+                              <td>{{ formatValue(row.Game_WinPattern) }}</td>
+                              <td>{{ row.Game_StartTime ? (row.Game_StartTime | date: 'short') : '—' }}</td>
+                              <td>{{ row.Game_EndTime ? (row.Game_EndTime | date: 'short') : '—' }}</td>
+                              <td class="game-master-status-cell {{ validationStatusClass(row.Status) }}">
+                                {{ formatValue(row.Status) }}
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </section>
+                  }
+                </section>
+
+                <section class="game-master-setup-block">
+                  <h3 class="game-master-setup-block__title">CallList_Master rows ({{ setup.CallListMasterRows.length }})</h3>
+                  @if (setup.CallListMasterRows.length === 0) {
+                    <p class="game-master-setup-empty">No rows.</p>
+                  } @else {
+                    <section class="game-master-table-wrap">
+                      <table class="game-master-table">
+                        <thead>
+                          <tr>
+                            <th>Call List ID</th>
+                            <th>Inning</th>
+                            <th>Name</th>
+                            <th>Genre</th>
+                            <th>Decade</th>
+                            <th>Era</th>
+                            <th>Songs</th>
+                            <th>Active</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (row of setup.CallListMasterRows; track row.Call_List_ID + '-' + row.Inning) {
+                            <tr>
+                              <td>{{ row.Call_List_ID }}</td>
+                              <td>{{ row.Game_ID }}</td>
+                              <td>{{ row.Inning }}</td>
+                              <td>{{ formatValue(row.Call_List_Name) }}</td>
+                              <td>{{ formatValue(row.Call_List_Genre) }}</td>
+                              <td>{{ formatValue(row.Call_List_Decade) }}</td>
+                              <td>{{ formatValue(row.Call_List_Era) }}</td>
+                              <td>{{ formatValue(row.Call_List_SongCount) }}</td>
+                              <td>{{ formatBool(row.Call_List_IsActive) }}</td>
+                              <td class="game-master-status-cell {{ validationStatusClass(row.Status) }}">
+                                {{ formatValue(row.Status) }}
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </section>
+                  }
+                </section>
+
+                <section class="game-master-setup-block">
+                  <h3 class="game-master-setup-block__title">CallList_Songs by inning ({{ setup.CallListSongsByInning.length }})</h3>
+                  @if (setup.CallListSongsByInning.length === 0) {
+                    <p class="game-master-setup-empty">No rows.</p>
+                  } @else {
+                    <section class="game-master-table-wrap">
+                      <table class="game-master-table">
+                        <thead>
+                          <tr>
+                            <th>Inning</th>
+                            <th>Songs</th>
+                            <th>Genres</th>
+                            <th>Decades</th>
+                            <th>First song</th>
+                            <th>Last song</th>
+                            <th>Explicit</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (row of setup.CallListSongsByInning; track row.Inning) {
+                            <tr>
+                              <td>{{ row.Inning }}</td>
+                              <td>{{ formatValue(row.Song_Count) }}</td>
+                              <td>{{ formatValue(row.Genre_Count) }}</td>
+                              <td>{{ formatValue(row.Decade_Count) }}</td>
+                              <td>{{ formatValue(row.First_Song) }}</td>
+                              <td>{{ formatValue(row.Last_Song) }}</td>
+                              <td>{{ formatValue(row.Explicit_Count) }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </section>
+                  }
+                </section>
+
+                <section class="game-master-setup-block">
+                  <h3 class="game-master-setup-block__title">Cards by inning ({{ setup.CardsByInning.length }})</h3>
+                  @if (setup.CardsByInning.length === 0) {
+                    <p class="game-master-setup-empty">No rows.</p>
+                  } @else {
+                    <section class="game-master-table-wrap">
+                      <table class="game-master-table">
+                        <thead>
+                          <tr>
+                            <th>Inning</th>
+                            <th>Total</th>
+                            <th>Unique IDs</th>
+                            <th>Players</th>
+                            <th>Winners</th>
+                            <th>First created</th>
+                            <th>Last created</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (row of setup.CardsByInning; track row.Inning) {
+                            <tr>
+                              <td>{{ row.Inning }}</td>
+                              <td>{{ formatValue(row.Total_Cards) }}</td>
+                              <td>{{ formatValue(row.Unique_Card_IDs) }}</td>
+                              <td>{{ formatValue(row.Unique_Players) }}</td>
+                              <td>{{ formatValue(row.Winner_Count) }}</td>
+                              <td>{{ row.First_Card_Created ? (row.First_Card_Created | date: 'short') : '—' }}</td>
+                              <td>{{ row.Last_Card_Created ? (row.Last_Card_Created | date: 'short') : '—' }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </section>
+                  }
+                </section>
+
+                <section class="game-master-setup-block">
+                  <h3 class="game-master-setup-block__title">Inning comparisons ({{ setup.InningComparisons.length }})</h3>
+                  @if (setup.InningComparisons.length === 0) {
+                    <p class="game-master-setup-empty">No rows.</p>
+                  } @else {
+                    <section class="game-master-table-wrap">
+                      <table class="game-master-table">
+                        <thead>
+                          <tr>
+                            <th>Inning</th>
+                            <th>Has master</th>
+                            <th>Has songs</th>
+                            <th>Song count</th>
+                            <th>Has cards</th>
+                            <th>Card count</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (row of setup.InningComparisons; track row.Inning) {
+                            <tr>
+                              <td>{{ row.Inning }}</td>
+                              <td>{{ formatValue(row.Has_CallList_Master) }}</td>
+                              <td>{{ formatValue(row.Has_Songs) }}</td>
+                              <td>{{ formatValue(row.Song_Count) }}</td>
+                              <td>{{ formatValue(row.Has_Cards) }}</td>
+                              <td>{{ formatValue(row.Card_Count) }}</td>
+                              <td class="game-master-status-cell {{ validationStatusClass(row.Inning_Status) }}">
+                                {{ formatValue(row.Inning_Status) }}
+                              </td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </section>
+                  }
+                </section>
+
+                <section class="game-master-setup-block">
+                  <h3 class="game-master-setup-block__title">Validation report ({{ setup.ValidationReport.length }})</h3>
+                  @if (setup.ValidationReport.length === 0) {
+                    <p class="game-master-setup-empty">No rows.</p>
+                  } @else {
+                    <section class="game-master-table-wrap">
+                      <table class="game-master-table">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Component</th>
+                            <th>Status</th>
+                            <th>Message</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (row of setup.ValidationReport; track row.Check_Number) {
+                            <tr>
+                              <td>{{ row.Check_Number }}</td>
+                              <td>{{ formatValue(row.Component) }}</td>
+                              <td class="game-master-status-cell {{ validationStatusClass(row.Status) }}">
+                                {{ formatValue(row.Status) }}
+                              </td>
+                              <td>{{ formatValue(row.Message) }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </section>
+                  }
+                </section>
+              </section>
+
+              @if (rawGameSetupJson(); as setupJson) {
+                <section class="game-master-setup-block game-master-setup-api">
+                  <h3 class="game-master-setup-block__title">{{ gameSetupApiPath() }}</h3>
+                  <p class="game-master-setup-api__url">
+                    <span class="game-master-setup-api__label">Request URL</span>
+                    <code>{{ gameSetupRequestUrl() }}</code>
+                  </p>
+                  <pre class="game-master-setup-api__raw">{{ setupJson }}</pre>
+                </section>
+              }
+            }
+            @if (!setupLoading() && !setupError() && !gameSetup() && hasLoaded()) {
+              <p class="game-master-setup-empty">No setup data returned. Click Load Game to run Check/Check_GameSetup.</p>
+            }
+          </section>
+        }
+
+        @if (activeTab() === 'gameResults') {
+          <section
+            class="game-master-tabs__panel"
+            id="game-master-panel-gameResults"
+            role="tabpanel"
+            aria-labelledby="game-master-tab-gameResults">
+            <p class="game-master-tabs__intro">
+              Results from <code>Get_Game_Winners_Results/1</code> (API Game_ID fixed at 1 for now).
+            </p>
+
+            @if (winnersError(); as winnersErr) {
+              <p class="game-master-message game-master-message--error">{{ winnersErr }}</p>
+            }
+
+            @if (winnersLoading()) {
+              <p class="game-master-setup-loading">Loading game results…</p>
+            } @else if (gameWinners().length === 0) {
+              <p class="game-master-setup-empty">No winner records returned for this game.</p>
+            } @else {
+              <section class="game-master-setup-block">
+                <h3 class="game-master-setup-block__title">{{ gameWinners().length }} result record(s)</h3>
+                <section class="game-master-table-wrap">
+                  <table class="game-master-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Game</th>
+                        <th>Call list</th>
+                        <th>Inning</th>
+                        <th>Card</th>
+                        <th>Pattern</th>
+                        <th>Songs called</th>
+                        <th>Created</th>
+                        <th>Updated</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of gameWinners(); track trackByGameWinnerRow($index, row)) {
+                        <tr>
+                          <td>{{ row.Call_List_Winner_ID }}</td>
+                          <td>{{ row.Game_ID }}</td>
+                          <td>{{ row.Call_List_ID }}</td>
+                          <td>{{ row.Inning }}</td>
+                          <td>{{ row.Call_List_WinningCard }}</td>
+                          <td>{{ formatValue(row.Call_List_WinningPatter) }}</td>
+                          <td>{{ formatValue(row.NumofSongsCalled) }}</td>
+                          <td>{{ row.Call_List_CreatedAt ? (row.Call_List_CreatedAt | date: 'short') : '—' }}</td>
+                          <td>{{ row.Call_List_UpdatedAt ? (row.Call_List_UpdatedAt | date: 'short') : '—' }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </section>
+              </section>
+            }
+          </section>
+        }
+
+        @if (activeTab() === 'gameWinners') {
+          <section
+            class="game-master-tabs__panel"
+            id="game-master-panel-gameWinners"
+            role="tabpanel"
+            aria-labelledby="game-master-tab-gameWinners">
+            <header class="game-master-winners-by-user__head">
+              <div>
+                <p class="game-master-tabs__intro">
+                  Winners from <code>Get_CallListWinner_by_UserID</code> for User_ID
+                  {{ resolveWinnersUserId() ?? '—' }} · Game_ID {{ gameId() }}.
+                </p>
+              </div>
+              <button
+                type="button"
+                class="game-master-btn game-master-btn--secondary"
+                (click)="loadCallListWinnersByUser()"
+                [disabled]="callListWinnersByUserLoading()">
+                {{ callListWinnersByUserLoading() ? 'Loading…' : 'Refresh' }}
+              </button>
+            </header>
+
+            @if (callListWinnersByUserError(); as winnersByUserErr) {
+              <p class="game-master-message game-master-message--error">{{ winnersByUserErr }}</p>
+            }
+
+            @if (callListWinnersByUserLoading() && callListWinnersByUser().length === 0) {
+              <p class="game-master-setup-loading">Loading winners by user…</p>
+            } @else if (callListWinnersByUser().length === 0) {
+              <p class="game-master-setup-empty">No winner records for this user and game.</p>
+            } @else {
+              <section class="game-master-setup-block">
+                <h3 class="game-master-setup-block__title">
+                  {{ callListWinnersByUser().length }} winner record(s)
+                </h3>
+                <section class="game-master-table-wrap">
+                  <table class="game-master-table">
+                    <thead>
+                      <tr>
+                        <th>ID</th>
+                        <th>Call list</th>
+                        <th>Name</th>
+                        <th>Inning</th>
+                        <th>Game #</th>
+                        <th>Game name</th>
+                        <th>Status</th>
+                        <th>Card</th>
+                        <th>Player</th>
+                        <th>Pattern</th>
+                        <th>Songs</th>
+                        <th>Created</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of callListWinnersByUser(); track trackByCallListWinnerByUserRow($index, row)) {
+                        <tr>
+                          <td>{{ row.Call_List_Winner_ID }}</td>
+                          <td>{{ row.Call_List_ID }}</td>
+                          <td [title]="row.Call_List_Name ?? ''">{{ formatValue(row.Call_List_Name) }}</td>
+                          <td>{{ row.Inning }}</td>
+                          <td>{{ formatValue(row.Game_Number) }}</td>
+                          <td>{{ formatValue(row.Game_Name) }}</td>
+                          <td>{{ formatValue(row.Game_Status) }}</td>
+                          <td>{{ row.Card_ID }}</td>
+                          <td>{{ formatValue(row.Card_PlayerName) }}</td>
+                          <td>{{ formatValue(row.Call_List_WinningPatter) }}</td>
+                          <td>{{ formatValue(row.NumofSongsCalled) }}</td>
+                          <td>{{ row.Call_List_CreatedAt ? (row.Call_List_CreatedAt | date: 'short') : '—' }}</td>
+                          <td>
+                            @if (row.Card_ID > 0) {
+                              <a
+                                class="game-master-winners-by-user__card-link"
+                                [routerLink]="['/slidecardone']"
+                                [queryParams]="{ cardId: row.Card_ID }"
+                                [attr.aria-label]="'Open card ' + row.Card_ID + ' on Slide Card One'">
+                                Winning Card
+                              </a>
+                            }
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </section>
+              </section>
+            }
+          </section>
+        }
+      </section>
+    </section>
+  }
+</section>

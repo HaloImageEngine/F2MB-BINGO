@@ -1,0 +1,229 @@
+<section class="clsong-review-page">
+  <header class="clsong-review-page__header">
+    <section class="clsong-review-page__hero">
+      <a routerLink="/console" class="clsong-review-page__back">&larr; Back to Console</a>
+      <h1>Call List Song Review</h1>
+      <p class="clsong-review-page__copy">
+        Load all call-list songs grouped by inning. Game_ID and Call_List_ID drive the API; Inning highlights the
+        active column.
+      </p>
+      <div class="clsong-review-page__user-top">
+        <span><strong>UserAlias:</strong> {{ currentUser()?.UserAlias || '—' }}</span>
+        <span><strong>UserId:</strong> {{ currentUser()?.UserId ?? '—' }}</span>
+      </div>
+    </section>
+  </header>
+
+  <section class="clsong-review-controls">
+    <section class="clsong-review-controls__grid">
+      <label class="clsong-review-field">
+        <span>Starting Game</span>
+        <select
+          class="clsong-review-field__select"
+          [ngModel]="gameId()"
+          (ngModelChange)="updateStartingGame($event)"
+          aria-label="Starting Game">
+          @for (game of startingGameOptions(); track game) {
+            <option [ngValue]="game">{{ game }}</option>
+          }
+        </select>
+      </label>
+      <label class="clsong-review-field">
+        <span>Game_ID</span>
+        <input
+          type="number"
+          min="1"
+          step="1"
+          [ngModel]="gameIdDraft()"
+          (ngModelChange)="onGameIdDraftInput($event)"
+          (blur)="commitGameIdFromDraft()"
+          (keydown.enter)="commitGameIdFromDraft(); $event.preventDefault()"
+          aria-label="Game ID" />
+      </label>
+      <label class="clsong-review-field">
+        <span>Call_List_ID</span>
+        <app-call-list-id-field
+          [value]="callListId()"
+          (valueChange)="setCallListIdFromInput($event)"
+          [autoSelectFirst]="true"
+          ariaLabel="Call List ID from your account" />
+      </label>
+      <label class="clsong-review-field">
+        <span>Inning</span>
+        <input
+          type="number"
+          min="1"
+          max="4"
+          step="1"
+          [ngModel]="inningDraft()"
+          (ngModelChange)="onInningDraftInput($event)"
+          (blur)="commitInningFromDraft()"
+          (keydown.enter)="commitInningFromDraft(); $event.preventDefault()"
+          aria-label="Inning" />
+      </label>
+      <section class="clsong-review-controls__actions">
+        <button
+          type="button"
+          class="clsong-review-btn clsong-review-btn--primary"
+          (click)="loadSongs()"
+          [disabled]="loading()">
+          {{ loading() ? 'Loading…' : 'Load Songs' }}
+        </button>
+      </section>
+    </section>
+    <p class="clsong-review-controls__hint">
+      API: <code>Get_Call_List_Songs_by4Inning/{{ gameId() }}/{{ callListId() ?? '…' }}</code>
+      (falls back to <code>Get_All_CallList_Songs_by_CallList_ID/{{ callListId() ?? '…' }}</code> when by4Inning is unavailable)
+    </p>
+  </section>
+
+  @if (error(); as err) {
+    <p class="clsong-review-message clsong-review-message--error">{{ err }}</p>
+  }
+  @if (!error() && noContent()) {
+    <p class="clsong-review-message clsong-review-message--info">no content</p>
+  }
+  @if (!error() && !noContent() && loadMessage(); as msg) {
+    <p class="clsong-review-message clsong-review-message--success">{{ msg }}</p>
+  }
+
+  <section class="clsong-review-board" aria-label="Songs by inning">
+    @if (loading() && !columnView()) {
+      <p class="clsong-review-board__state">Loading call list songs…</p>
+    } @else if (!columnView()) {
+      <p class="clsong-review-board__state">Enter Game_ID and Call_List_ID, then click Load Songs.</p>
+    } @else {
+      @if (loading()) {
+        <p class="clsong-review-board__state clsong-review-board__state--overlay">Refreshing songs…</p>
+      }
+      <div class="clsong-review-columns">
+        @for (column of columnView()!.columns; track column.inning) {
+          <section
+            class="clsong-review-column"
+            [class.clsong-review-column--active]="column.isActive"
+            [attr.aria-label]="column.label">
+            <header class="clsong-review-column__head">
+              <div class="clsong-review-column__head-row">
+                <h2>{{ column.label }}</h2>
+                <span class="clsong-review-column__count">{{ column.songCount }} songs</span>
+              </div>
+              <div class="clsong-review-column__gen-row">
+                <select
+                  class="clsong-review-column__genre"
+                  [ngModel]="genreByInning()[column.inning]"
+                  (ngModelChange)="setGenreForInning(column.inning, $event)"
+                  [ngModelOptions]="{ standalone: true }"
+                  [attr.aria-label]="'Genre for ' + column.label"
+                  [attr.title]="'Genre for ' + column.label">
+                  @if (genreOptions().length === 0) {
+                    <option ngValue="Pop">Pop</option>
+                  } @else {
+                    @for (option of genreOptions(); track option.Id != null ? option.Id : option.Name) {
+                      <option [ngValue]="option.Name ?? 'Pop'">{{ option.Name }}</option>
+                    }
+                  }
+                </select>
+                <button
+                  type="button"
+                  class="clsong-review-btn clsong-review-btn--gen"
+                  [disabled]="isGen70Disabled(column)"
+                  [attr.title]="column.songCount >= 70 ? 'Inning already has ' + column.songCount + ' songs (target 70)' : null"
+                  (click)="generateSeventyForInning(column.inning, column.songCount)">
+                  {{ isCompletingInning(column.inning) ? 'Gen 70…' : 'Gen 70' }}
+                </button>
+              </div>
+            </header>
+            <div class="clsong-review-column__body">
+              @if (column.songs.length === 0) {
+                <p class="clsong-review-column__empty">No songs in this inning.</p>
+              } @else {
+                <ul class="clsong-review-song-list">
+                  @for (song of column.songs; track song.songId) {
+                    <li class="clsong-review-song">
+                      <div class="clsong-review-song__main">
+                        <span class="clsong-review-song__id">#{{ song.songId }}</span>
+                        <strong class="clsong-review-song__title">{{ song.title }}</strong>
+                        <span class="clsong-review-song__detail">{{ song.detailLine }}</span>
+                        <span class="clsong-review-song__meta">
+                          <span class="clsong-review-chip">{{ song.genre || 'Unknown genre' }}</span>
+                          <span class="clsong-review-chip clsong-review-chip--muted">
+                            {{ song.lastPlayed ? (song.lastPlayed | date: 'MM/dd/yy') : 'Not played' }}
+                          </span>
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        class="clsong-review-btn clsong-review-btn--remove"
+                        [disabled]="removingSongKey() !== null || completingInningKey() !== null"
+                        (click)="removeCallListSong(song)">
+                        {{ isRemovingSong(song) ? 'Removing…' : 'Remove' }}
+                      </button>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          </section>
+        }
+      </div>
+    }
+  </section>
+
+  <section class="complete-cl-songs-bar" aria-label="Complete call list songs to 70">
+    <div class="complete-cl-songs-bar__intro">
+      <h2 class="complete-cl-songs-bar__title">Complete Call List Songs</h2>
+      <p class="complete-cl-songs-bar__copy">
+        <code>POST …/Complete_CallList_Songs_by_CallListandInning/&#123;Call_List_ID&#125;/&#123;Inning&#125;?genre=…</code>
+        — fills the inning up to 70 songs for the selected genre.
+      </p>
+    </div>
+    <div class="complete-cl-songs-bar__controls">
+      <label class="complete-cl-songs-bar__field">
+        <span>Call_List_ID</span>
+        <app-call-list-id-field
+          [value]="callListId()"
+          (valueChange)="setCallListIdFromInput($event)"
+          ariaLabel="Call List ID for complete songs" />
+      </label>
+      <label class="complete-cl-songs-bar__field">
+        <span>Inning</span>
+        <select
+          [ngModel]="inning()"
+          [ngModelOptions]="{ standalone: true }"
+          (ngModelChange)="setInningFromSelect($event)"
+          aria-label="Inning for complete call list songs">
+          <option [ngValue]="1">1</option>
+          <option [ngValue]="2">2</option>
+          <option [ngValue]="3">3</option>
+          <option [ngValue]="4">4</option>
+        </select>
+      </label>
+      <label class="complete-cl-songs-bar__field">
+        <span>Genre</span>
+        <select
+          class="complete-cl-songs-bar__genre"
+          [ngModel]="genreForInning(inning())"
+          [ngModelOptions]="{ standalone: true }"
+          (ngModelChange)="setGenreForInning(inning(), $event)"
+          aria-label="Genre for random songs">
+          @if (genreOptions().length === 0) {
+            <option ngValue="Pop">Pop</option>
+          } @else {
+            @for (option of genreOptions(); track option.Id != null ? option.Id : option.Name) {
+              <option [ngValue]="option.Name ?? 'Pop'">{{ option.Name }}</option>
+            }
+          }
+        </select>
+      </label>
+      <button
+        type="button"
+        class="complete-cl-songs-bar__btn"
+        (click)="completeCallListSongsFromBar()"
+        [disabled]="isCompleteBarDisabled()"
+        [attr.title]="activeInningSongCount() >= 70 ? 'Inning already has ' + activeInningSongCount() + ' songs (target 70)' : null">
+        {{ isCompletingActiveInning() ? 'Completing…' : 'Complete to 70' }}
+      </button>
+    </div>
+  </section>
+</section>
+

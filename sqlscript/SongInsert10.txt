@@ -1,0 +1,139 @@
+Here is my stored proc : /****** Object:  StoredProcedure [dbo].[usp_Insert_NewSong_CheckDup]    Script Date: 4/25/2026 8:59:32 PM ******/
+
+SET ANSI_NULLS ON
+
+GO
+
+SET QUOTED_IDENTIFIER ON
+
+GO
+
+-- =============================================
+
+-- Author:      William D Beaty
+
+-- Create date: 2026-04-20
+
+-- Description: Insert a single song into dbo.songs
+
+--              Prevents duplicates based on Title + Artist
+
+-- =============================================
+
+CREATE PROCEDURE [dbo].[usp_Insert_NewSong_CheckDup]
+
+(
+
+    @title NVARCHAR(255),
+
+    @artist NVARCHAR(255),
+
+    @artist_type NVARCHAR(50),
+
+    @genre NVARCHAR(100),
+
+    @subgenre NVARCHAR(100),
+
+    @mood NVARCHAR(100),
+
+    @tempo NVARCHAR(50),
+
+    @release_year INT,
+
+    @decade NVARCHAR(10),
+
+    @era NVARCHAR(50),
+
+    @bingo_category NVARCHAR(100),
+
+    @difficulty NVARCHAR(50),
+
+    @chart_peak_position INT,
+
+    @chart_country NVARCHAR(10),
+
+    @spotify_popularity INT,
+
+    @duration_seconds INT,
+
+    @active BIT
+
+)
+
+AS
+
+BEGIN
+
+    SET NOCOUNT ON;
+
+    -- =============================================
+
+    -- Check if the song already exists
+
+    -- Duplicate definition: same Title + Artist
+
+    -- =============================================
+
+    IF EXISTS (
+
+        SELECT 1
+
+        FROM dbo.songs
+
+        WHERE title = @title
+
+          AND artist = @artist
+
+    )
+
+    BEGIN
+
+        -- Song already exists → do not insert
+
+        PRINT 'Duplicate detected. Song was not inserted.';
+
+        RETURN 0; -- 0 = not inserted
+
+    END
+
+    -- =============================================
+
+    -- Insert new song since no duplicate was found
+
+    -- =============================================
+
+    INSERT INTO dbo.songs (
+
+        title, artist, artist_type, genre, subgenre, mood,
+
+        tempo, release_year, decade, era,
+
+        bingo_category, difficulty, chart_peak_position,
+
+        chart_country, spotify_popularity, duration_seconds, active
+
+    )
+
+    VALUES (
+
+        @title, @artist, @artist_type, @genre, @subgenre, @mood,
+
+        @tempo, @release_year, @decade, @era,
+
+        @bingo_category, @difficulty, @chart_peak_position,
+
+        @chart_country, @spotify_popularity, @duration_seconds, @active
+
+    );
+
+    -- Success
+
+    PRINT 'Song inserted successfully.';
+
+    RETURN 1; -- 1 = inserted
+
+END
+
+GO
+
+:  create a sql script uses the stored proc 'usp_Insert_NewSong_CheckDup', in the script add the top 200 songs from the decade '80s'

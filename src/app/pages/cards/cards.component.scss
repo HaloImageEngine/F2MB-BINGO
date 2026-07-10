@@ -1,0 +1,46 @@
+.cards-page {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.cards-page__header h1 {
+  margin: 0;
+  font-size: clamp(2rem, 3vw, 2.8rem);
+}
+
+.cards-page__eyebrow {
+  margin: 0 0 0.35rem;
+  color: var(--accent-rose);
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.cards-page__copy {
+  margin: 0.45rem 0 0;
+  max-width: 42rem;
+  color: var(--text-muted);
+}
+
+.cards-page__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.cards-page__panel {
+  padding: 1rem;
+}
+
+.cards-page__panel-header {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 1200px) {
+  .cards-page__grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,71 @@
+<section class="audit-records-page">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <a routerLink="/console" class="audit-records-page__back">&larr; Back to Console</a>
+      <h1 class="page-header__title">Audit Records</h1>
+      <p class="page-header__sub" *ngIf="!loading()">
+        Latest {{ recordCount() }} entries from Get_Latest20_Audit_Records
+      </p>
+    </div>
+    <button
+      type="button"
+      class="btn-refresh"
+      (click)="loadRecords()"
+      [disabled]="loading()"
+      aria-label="Refresh audit records">
+      <span class="btn-refresh__icon" [class.spinning]="loading()">↻</span>
+      Refresh
+    </button>
+  </header>
+
+  <div class="state-message" *ngIf="loading() && records().length === 0">
+    <span class="state-message__icon">⏳</span>
+    <span>Loading audit records…</span>
+  </div>
+
+  <div class="state-message state-message--error" *ngIf="error() && !loading()">
+    <span class="state-message__icon">⚠</span>
+    <span>{{ error() }}</span>
+    <button type="button" class="btn-retry" (click)="loadRecords()">Retry</button>
+  </div>
+
+  <div class="state-message" *ngIf="!loading() && !error() && records().length === 0">
+    <span class="state-message__icon">📋</span>
+    <span>No audit records found.</span>
+  </div>
+
+  <div class="audit-table-wrap surface-card" *ngIf="records().length > 0">
+    <table class="audit-table">
+      <thead>
+        <tr>
+          <th>Audit ID</th>
+          <th>Date / Time</th>
+          <th>User</th>
+          <th>Origin</th>
+          <th>Event</th>
+          <th>Severity</th>
+          <th>Error Code</th>
+          <th>Comment</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let record of records(); trackBy: trackByAuditId">
+          <td>{{ record.AuditID }}</td>
+          <td class="audit-table__datetime">{{ record.DateTimeStamp | date: 'MMM d, y, h:mm:ss a' }}</td>
+          <td>{{ record.UserId }}</td>
+          <td>{{ record.Origin }}</td>
+          <td>
+            <span class="event-tag">{{ record.EventType }}</span>
+          </td>
+          <td>
+            <span class="severity-tag" [ngClass]="severityClass(record.SeverityCode)">
+              {{ severityLabel(record.SeverityCode) }}
+            </span>
+          </td>
+          <td>{{ record.ErrorCode || '—' }}</td>
+          <td class="audit-table__comment">{{ record.CommentShort }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

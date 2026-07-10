@@ -1,0 +1,84 @@
+<section class="page overview">
+	<header class="page__header">
+		<span class="tag accent-rose">{{ content().tag }}</span>
+		<div class="page__header-row">
+			<h2>{{ content().title }}</h2>
+			<a routerLink="/console" class="overview__start-btn">Start Console Game</a>
+		</div>
+		<p>{{ content().subtitle }}</p>
+	</header>
+
+	<section class="surface-card hero-panel">
+		<div class="hero-panel__lead">
+			<p class="eyebrow">{{ content().heroEyebrow }}</p>
+			<h3>{{ content().heroTitle }}</h3>
+			<p class="hero-panel__copy">{{ content().heroCopy }}</p>
+			<div class="hero-panel__chips" [attr.aria-label]="content().chipsAriaLabel">
+				<span *ngFor="let chip of content().chips">{{ chip }}</span>
+			</div>
+		</div>
+		<div class="hero-panel__spotlights">
+			<div class="hero-panel__spotlight" *ngFor="let item of content().spotlightStats">
+				<p>{{ item.label }}</p>
+				<strong>{{ item.value }}</strong>
+			</div>
+		</div>
+	</section>
+
+	<div class="metrics-grid">
+		<article class="surface-card metric-card" *ngFor="let metric of content().metrics" [attr.data-trend]="metric.trend">
+			<p class="metric-card__label">{{ metric.label }}</p>
+			<p class="metric-card__value">{{ metric.value }}</p>
+			<p class="metric-card__change">{{ metric.change }}</p>
+			<p class="metric-card__note">{{ metric.note }}</p>
+		</article>
+	</div>
+
+	<div class="panels-grid">
+		<article class="surface-card activity">
+			<header>
+				<p class="eyebrow">{{ content().activityEyebrow }}</p>
+				<h3>{{ content().activityTitle }}</h3>
+			</header>
+			<ul>
+				<li *ngFor="let item of content().activityFeed">
+					<div class="activity__time">{{ item.time }}</div>
+					<div>
+						<p class="activity__owner">{{ item.owner }}</p>
+						<p class="activity__detail">{{ item.detail }}</p>
+					</div>
+				</li>
+			</ul>
+		</article>
+
+		<article class="surface-card readiness">
+			<header>
+				<p class="eyebrow">{{ content().readinessEyebrow }}</p>
+				<h3>{{ content().readinessTitle }}</h3>
+			</header>
+			<ul>
+				<li *ngFor="let item of content().readinessChecks" [attr.data-status]="item.status">
+					<div>
+						<p class="readiness__label">{{ item.label }}</p>
+						<p class="readiness__note">{{ item.note }}</p>
+					</div>
+					<span class="readiness__status">{{ item.status }}</span>
+				</li>
+			</ul>
+		</article>
+	</div>
+
+	<article class="surface-card pipeline">
+		<header>
+			<p class="eyebrow">{{ content().pipelineEyebrow }}</p>
+			<h3>{{ content().pipelineTitle }}</h3>
+		</header>
+		<div class="pipeline__grid">
+			<div *ngFor="let step of content().pipeline">
+				<p class="pipeline__stage">{{ step.stage }}</p>
+				<p class="pipeline__status">{{ step.status }}</p>
+				<p class="pipeline__detail">{{ step.detail }}</p>
+			</div>
+		</div>
+	</article>
+</section>

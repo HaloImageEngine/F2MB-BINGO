@@ -1,0 +1,18 @@
+<section class="cards-page">
+  <header class="cards-page__header">
+    <div>
+      <p class="cards-page__eyebrow">Cards</p>
+      <h1>Music Bingo Deck</h1>
+      <p class="cards-page__copy">Two single-card layouts are staged side by side for head-to-head play.</p>
+    </div>
+  </header>
+
+  <section class="cards-page__grid" aria-label="Two bingo cards">
+    <article class="cards-page__panel surface-card" *ngFor="let cardLabel of cardLabels">
+      <div class="cards-page__panel-header">
+        <span class="tag accent-teal">{{ cardLabel }}</span>
+      </div>
+      <app-bingo></app-bingo>
+    </article>
+  </section>
+</section>

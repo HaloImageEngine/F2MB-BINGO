@@ -1,0 +1,88 @@
+<section class="song-detail-page">
+  <header class="song-detail-page__header">
+    <div>
+      <a routerLink="/console/songs" class="song-detail-page__back">&larr; Back to Songs</a>
+      <h1>{{ song()?.Title || 'Song Detail' }}</h1>
+      <p class="song-detail-page__subtitle">{{ song()?.Artist || 'Unknown artist' }}</p>
+    </div>
+    <span class="song-detail-page__status" [class.song-detail-page__status--inactive]="song() && !song()!.Active">
+      {{ song()?.Active ? 'Active' : 'Inactive' }}
+    </span>
+  </header>
+
+  <div class="song-detail-page__state" *ngIf="loading()">Loading song details...</div>
+  <div class="song-detail-page__state song-detail-page__state--error" *ngIf="error() as errorMessage">{{ errorMessage }}</div>
+
+  <section class="song-detail-card" *ngIf="!loading() && !error() && song() as currentSong">
+    <div class="song-detail-grid">
+      <article class="song-detail-item">
+        <span class="song-detail-item__label">Song ID</span>
+        <strong>{{ currentSong.song_id ?? 'Unknown' }}</strong>
+      </article>
+      <article class="song-detail-item">
+        <span class="song-detail-item__label">Title</span>
+        <strong>{{ currentSong.Title || 'Unknown' }}</strong>
+      </article>
+      <article class="song-detail-item">
+        <span class="song-detail-item__label">Artist</span>
+        <strong>{{ currentSong.Artist || 'Unknown' }}</strong>
+      </article>
+      <article class="song-detail-item">
+        <span class="song-detail-item__label">Artist Type</span>
+        <strong>{{ currentSong.ArtistType || 'Unknown' }}</strong>
+      </article>
+      <article class="song-detail-item">
+        <span class="song-detail-item__label">Genre</span>
+        <strong>{{ currentSong.Genre || 'Unknown' }}</strong>
+      </article>
+      <article class="song-detail-item">
+        <span class="song-detail-item__label">Subgenre</span>
+        <strong>{{ currentSong.Subgenre || 'Unknown' }}</strong>
+      </article>
+      <article class="song-detail-item">
+        <span class="song-detail-item__label">Mood</span>
+        <strong>{{ currentSong.Mood || 'Unknown' }}</strong>
+      </article>
+      <article class="song-detail-item">
+        <span class="song-detail-item__label">Tempo</span>
+        <strong>{{ currentSong.Tempo || 'Unknown' }}</strong>
+      </article>
+      <article class="song-detail-item">
+        <span class="song-detail-item__label">Release Year</span>
+        <strong>{{ currentSong.ReleaseYear ?? 'Unknown' }}</strong>
+      </article>
+      <article class="song-detail-item">
+        <span class="song-detail-item__label">Decade</span>
+        <strong>{{ currentSong.Decade || 'Unknown' }}</strong>
+      </article>
+      <article class="song-detail-item">
+        <span class="song-detail-item__label">Era</span>
+        <strong>{{ currentSong.Era || 'Unknown' }}</strong>
+      </article>
+      <article class="song-detail-item">
+        <span class="song-detail-item__label">Bingo Category</span>
+        <strong>{{ currentSong.BingoCategory || 'Unknown' }}</strong>
+      </article>
+      <article class="song-detail-item">
+        <span class="song-detail-item__label">Difficulty</span>
+        <strong>{{ currentSong.Difficulty || 'Unknown' }}</strong>
+      </article>
+      <article class="song-detail-item">
+        <span class="song-detail-item__label">Chart Peak Position</span>
+        <strong>{{ currentSong.ChartPeakPosition ?? 'Unknown' }}</strong>
+      </article>
+      <article class="song-detail-item">
+        <span class="song-detail-item__label">Chart Country</span>
+        <strong>{{ currentSong.ChartCountry || 'Unknown' }}</strong>
+      </article>
+      <article class="song-detail-item">
+        <span class="song-detail-item__label">Spotify Popularity</span>
+        <strong>{{ currentSong.SpotifyPopularity ?? 'Unknown' }}</strong>
+      </article>
+      <article class="song-detail-item">
+        <span class="song-detail-item__label">Duration</span>
+        <strong>{{ formatDuration(currentSong.DurationSeconds) }}</strong>
+      </article>
+    </div>
+  </section>
+</section>

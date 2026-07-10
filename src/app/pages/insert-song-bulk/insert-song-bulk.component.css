@@ -1,0 +1,256 @@
+:host {
+  display: block;
+}
+
+.insert-song-bulk-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.insert-song-bulk-page__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.insert-song-bulk-page__back,
+.insert-song-bulk-page__link {
+  color: #9ca3af;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.insert-song-bulk-page__back:hover,
+.insert-song-bulk-page__link:hover {
+  color: #ffffff;
+}
+
+.insert-song-bulk-page__header h1 {
+  margin: 0.35rem 0 0;
+  font-size: 2rem;
+  color: #ffffff;
+}
+
+.insert-song-bulk-page__copy {
+  margin: 0.4rem 0 0;
+  max-width: 44rem;
+  color: #9ca3af;
+}
+
+.insert-song-bulk-page__user-top {
+  margin-top: 0.65rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.9rem;
+  color: #d1d5db;
+}
+
+.insert-song-bulk-page__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.insert-song-bulk-page__primary,
+.insert-song-bulk-page__secondary {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.8rem 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.insert-song-bulk-page__primary {
+  background: linear-gradient(135deg, #f5c76d, #d97706);
+  color: #1f1302;
+}
+
+.insert-song-bulk-page__primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.insert-song-bulk-page__secondary {
+  background: #111827;
+  color: #e5e7eb;
+  border: 1px solid #374151;
+}
+
+.insert-song-bulk-shell {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.insert-song-bulk-summary {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.insert-song-bulk-summary__card,
+.insert-song-bulk-form {
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 16px;
+}
+
+.insert-song-bulk-summary__card {
+  padding: 1rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.insert-song-bulk-summary__label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+}
+
+.insert-song-bulk-summary__card strong {
+  font-size: 1.25rem;
+  color: #ffffff;
+}
+
+.insert-song-bulk-summary__success {
+  color: #6ee7b7;
+}
+
+.insert-song-bulk-summary__card small {
+  color: #cbd5e1;
+}
+
+.insert-song-bulk-form {
+  padding: 1rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.insert-song-bulk-form__state {
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+}
+
+.insert-song-bulk-form__state--error {
+  background: rgba(127, 29, 29, 0.35);
+  color: #fecaca;
+}
+
+.insert-song-bulk-form__state--success {
+  background: rgba(6, 78, 59, 0.35);
+  color: #a7f3d0;
+}
+
+.insert-song-bulk-field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.insert-song-bulk-field span {
+  color: #d1d5db;
+  font-size: 0.9rem;
+}
+
+.insert-song-bulk-field textarea {
+  width: 100%;
+  min-height: 28rem;
+  resize: vertical;
+  border-radius: 16px;
+  border: 1px solid #374151;
+  background: #0b1220;
+  color: #f9fafb;
+  padding: 1rem;
+  font: 500 0.9rem/1.55 Consolas, 'Courier New', monospace;
+}
+
+.insert-song-bulk-field textarea:focus {
+  outline: 2px solid rgba(245, 199, 109, 0.35);
+  border-color: #f5c76d;
+}
+
+.insert-song-bulk-field textarea.ng-invalid.ng-touched {
+  border-color: #f87171;
+}
+
+.insert-song-bulk-field__error {
+  color: #fca5a5;
+  font-size: 0.78rem;
+}
+
+.insert-song-bulk-form__footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.insert-song-bulk-results {
+  display: grid;
+  border: 1px solid #374151;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.insert-song-bulk-results__head,
+.insert-song-bulk-results__row {
+  display: grid;
+  grid-template-columns: 0.4fr 0.8fr 0.8fr 3fr;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  align-items: start;
+}
+
+.insert-song-bulk-results__head {
+  background: #0b1220;
+  color: #9ca3af;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.insert-song-bulk-results__row {
+  border-top: 1px solid rgba(55, 65, 81, 0.8);
+  color: #e5e7eb;
+}
+
+.insert-song-bulk-results__ok {
+  color: #6ee7b7;
+  font-weight: 700;
+}
+
+.insert-song-bulk-results__fail {
+  color: #fca5a5;
+  font-weight: 700;
+}
+
+@media (max-width: 960px) {
+  .insert-song-bulk-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .insert-song-bulk-page__header {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 720px) {
+  .insert-song-bulk-page__actions {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .insert-song-bulk-form__footer {
+    justify-content: stretch;
+  }
+
+  .insert-song-bulk-page__primary {
+    width: 100%;
+  }
+
+  .insert-song-bulk-results__head,
+  .insert-song-bulk-results__row {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+}

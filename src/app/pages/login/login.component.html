@@ -1,0 +1,50 @@
+<section class="login-page">
+  <div class="login-card">
+    <header class="login-card__header">
+      <p class="login-card__eyebrow">Music Bingo Admin</p>
+      <h1>Sign in</h1>
+      <p class="login-card__copy">Enter your credentials to access the DJ GOGI console and tools.</p>
+    </header>
+
+    <form class="login-form" (ngSubmit)="onSubmit()">
+      <label class="login-field" for="login">
+        <span>Login</span>
+        <input
+          id="login"
+          type="text"
+          [(ngModel)]="login"
+          name="login"
+          autocomplete="username"
+          required />
+      </label>
+
+      <label class="login-field" for="password">
+        <span>Password</span>
+        <input
+          id="password"
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          autocomplete="current-password"
+          required />
+      </label>
+
+      @if (error) {
+        <p class="login-form__error" role="alert">{{ error }}</p>
+      }
+
+      <button type="submit" class="login-form__submit" [disabled]="submitting">
+        {{ submitting ? 'Signing in…' : 'Login' }}
+      </button>
+
+      <p class="login-form__footer">
+        Need an account?
+        <a routerLink="/register">Create account</a>
+      </p>
+    </form>
+  </div>
+
+  <p class="login-page__build" title="Build identifier from environment file">
+    Build {{ appVersion }} · {{ buildKind }}
+  </p>
+</section>

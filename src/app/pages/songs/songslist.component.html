@@ -1,0 +1,135 @@
+<section class="songs-page">
+
+  <section class="songs-info-bar" *ngIf="!loadingCounts()">
+    <span class="songs-info-bar__eyebrow">Song Library — Counts</span>
+    <div class="songs-mini-dash">
+      <div class="songs-mini-dash__panel">
+        <h3 class="songs-mini-dash__title">By Era</h3>
+        <ul class="songs-mini-dash__list">
+          <li class="songs-mini-dash__row" *ngFor="let item of eraCounts()">
+            <span class="songs-mini-dash__row-label">{{ item.Era }}</span>
+            <span class="songs-mini-dash__row-value">{{ item.SongCount }}</span>
+          </li>
+        </ul>
+      </div>
+      <div class="songs-mini-dash__panel">
+        <h3 class="songs-mini-dash__title">By Genre</h3>
+        <ul class="songs-mini-dash__list">
+          <li class="songs-mini-dash__row" *ngFor="let item of genreCounts()">
+            <span class="songs-mini-dash__row-label">{{ item.Genre }}</span>
+            <span class="songs-mini-dash__row-value">{{ item.SongCount }}</span>
+          </li>
+        </ul>
+      </div>
+      <div class="songs-mini-dash__panel">
+        <h3 class="songs-mini-dash__title">By Artist Type</h3>
+        <ul class="songs-mini-dash__list">
+          <li class="songs-mini-dash__row" *ngFor="let item of artistTypeCounts()">
+            <span class="songs-mini-dash__row-label">{{ item.ArtistType }}</span>
+            <span class="songs-mini-dash__row-value">{{ item.SongCount }}</span>
+          </li>
+        </ul>
+      </div>
+      <div class="songs-mini-dash__panel">
+        <h3 class="songs-mini-dash__title">By Decade</h3>
+        <ul class="songs-mini-dash__list">
+          <li class="songs-mini-dash__row" *ngFor="let item of decadeCounts()">
+            <span class="songs-mini-dash__row-label">{{ item.Decade }}</span>
+            <span class="songs-mini-dash__row-value">{{ item.SongCount }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <header class="songs-page__header">
+    <div>
+      <a routerLink="/console" class="songs-page__back">&larr; Back to Console</a>
+      <h1>Song Library</h1>
+      <p class="songs-page__copy">Browse the API-backed catalog. This view shows a subset of display fields for quick scanning.</p>
+    </div>
+    <div class="songs-page__tools">
+      <label class="songs-search">
+        <span class="songs-search__label">Search</span>
+        <input
+          type="search"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="updateSearchTerm($event)"
+          placeholder="Search title or artist" />
+      </label>
+
+      <label class="songs-search songs-search--select">
+        <span class="songs-search__label">Decade</span>
+        <select [ngModel]="selectedDecade()" (ngModelChange)="updateSelectedDecade($event)">
+          <option value="">All decades</option>
+          <option *ngFor="let option of decadeOptions()" [value]="option.Name ?? ''">{{ option.Name }}</option>
+        </select>
+      </label>
+
+      <label class="songs-search songs-search--select">
+        <span class="songs-search__label">Genre</span>
+        <select [ngModel]="selectedGenre()" (ngModelChange)="updateSelectedGenre($event)">
+          <option value="">All genres</option>
+          <option *ngFor="let genre of genreOptions()" [value]="genre">{{ genre }}</option>
+        </select>
+      </label>
+
+      <div class="songs-page__stats">
+        <div class="songs-stat">
+          <span class="songs-stat__value">{{ totalCount() }}</span>
+          <span class="songs-stat__label">Total Songs</span>
+        </div>
+        <div class="songs-stat">
+          <span class="songs-stat__value">{{ activeCount() }}</span>
+          <span class="songs-stat__label">Active</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="songs-board">
+    <div class="songs-board__state" *ngIf="loading()">Loading songs...</div>
+    <div class="songs-board__state songs-board__state--error" *ngIf="error() as errorMessage">{{ errorMessage }}</div>
+
+    <div class="songs-table" *ngIf="!loading() && !error() && filteredSongs().length > 0">
+      <div class="songs-table__head">
+        <button type="button" class="songs-table__sort" (click)="toggleSort('Title')">Song <span>{{ sortIndicator('Title') }}</span></button>
+        <button type="button" class="songs-table__sort" (click)="toggleSort('Era')">Era <span>{{ sortIndicator('Era') }}</span></button>
+        <button type="button" class="songs-table__sort" (click)="toggleSort('ReleaseYear')">Year <span>{{ sortIndicator('ReleaseYear') }}</span></button>
+        <button type="button" class="songs-table__sort" (click)="toggleSort('Tempo')">Temp <span>{{ sortIndicator('Tempo') }}</span></button>
+        <button type="button" class="songs-table__sort" (click)="toggleSort('Decade')">Decade <span>{{ sortIndicator('Decade') }}</span></button>
+        <button type="button" class="songs-table__sort" (click)="toggleSort('Genre')">Genre <span>{{ sortIndicator('Genre') }}</span></button>
+        <button type="button" class="songs-table__sort" (click)="toggleSort('Difficulty')">Difficulty <span>{{ sortIndicator('Difficulty') }}</span></button>
+        <button type="button" class="songs-table__sort" (click)="toggleSort('LastPlayed')">Last Played <span>{{ sortIndicator('LastPlayed') }}</span></button>
+        <button type="button" class="songs-table__sort" (click)="toggleSort('Active')">Status <span>{{ sortIndicator('Active') }}</span></button>
+      </div>
+
+      <a
+        class="songs-table__row"
+        *ngFor="let song of filteredSongs(); trackBy: trackBySong"
+        [routerLink]="songDetailLink(song)">
+        <span class="songs-table__song">
+          <strong>{{ song.Title || 'Untitled song' }}</strong>
+          <small>{{ song.Artist || 'Unknown artist' }}</small>
+        </span>
+        <span>{{ song.Era || 'Unknown' }}</span>
+        <span>{{ song.ReleaseYear || 'Unknown' }}</span>
+        <span>{{ song.Tempo || 'Unknown' }}</span>
+        <span>{{ song.Decade || 'Unknown' }}</span>
+        <span>{{ song.Genre || 'Unknown' }}</span>
+        <span>
+          <span class="songs-pill songs-pill--difficulty" [attr.data-difficulty]="(song.Difficulty || 'unknown').toLowerCase()">
+            {{ song.Difficulty || 'Unknown' }}
+          </span>
+        </span>
+        <span>{{ formatLastPlayed(song.LastPlayed) }}</span>
+        <span>
+          <span class="songs-pill" [class.songs-pill--inactive]="!song.Active">{{ song.Active ? 'Active' : 'Inactive' }}</span>
+        </span>
+      </a>
+    </div>
+
+    <div class="songs-board__state" *ngIf="!loading() && !error() && songs().length === 0">No songs returned from the API.</div>
+    <div class="songs-board__state" *ngIf="!loading() && !error() && songs().length > 0 && filteredSongs().length === 0">No songs match your search.</div>
+  </section>
+</section>

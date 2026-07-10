@@ -1,0 +1,232 @@
+:host {
+  display: block;
+}
+
+.insert-song-page {
+  display: grid;
+  gap: 1rem;
+}
+
+.insert-song-page__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.insert-song-page__back,
+.insert-song-page__link {
+  color: #9ca3af;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.insert-song-page__back:hover,
+.insert-song-page__link:hover {
+  color: #ffffff;
+}
+
+.insert-song-page__header h1 {
+  margin: 0.35rem 0 0;
+  font-size: 2rem;
+  color: #ffffff;
+}
+
+.insert-song-page__copy {
+  margin: 0.4rem 0 0;
+  max-width: 42rem;
+  color: #9ca3af;
+}
+
+.insert-song-page__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.insert-song-page__primary,
+.insert-song-page__secondary {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.8rem 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.insert-song-page__primary {
+  background: linear-gradient(135deg, #1dd3b0, #0f766e);
+  color: #041312;
+}
+
+.insert-song-page__primary:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.insert-song-page__secondary {
+  background: #111827;
+  color: #e5e7eb;
+  border: 1px solid #374151;
+}
+
+.insert-song-shell {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.insert-song-summary {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.insert-song-summary__card,
+.insert-song-form {
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 16px;
+}
+
+.insert-song-summary__card {
+  padding: 1rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.insert-song-summary__label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9ca3af;
+}
+
+.insert-song-summary__card strong {
+  font-size: 1.25rem;
+  color: #ffffff;
+}
+
+.insert-song-summary__success {
+  color: #6ee7b7;
+}
+
+.insert-song-summary__card small {
+  color: #cbd5e1;
+}
+
+.insert-song-form {
+  padding: 1rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.insert-song-form__state {
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #d1d5db;
+}
+
+.insert-song-form__state--error {
+  background: rgba(127, 29, 29, 0.35);
+  color: #fecaca;
+}
+
+.insert-song-form__state--success {
+  background: rgba(6, 78, 59, 0.35);
+  color: #a7f3d0;
+}
+
+.insert-song-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.insert-song-field {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.insert-song-field span {
+  color: #d1d5db;
+  font-size: 0.9rem;
+}
+
+.insert-song-field__error {
+  color: #fca5a5;
+  font-size: 0.78rem;
+  line-height: 1.3;
+}
+
+.insert-song-field input,
+.insert-song-field select {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #374151;
+  background: #0b1220;
+  color: #f9fafb;
+  padding: 0.8rem 0.9rem;
+}
+
+.insert-song-field input::placeholder {
+  color: #6b7280;
+}
+
+.insert-song-field input:focus,
+.insert-song-field select:focus {
+  outline: 2px solid rgba(29, 211, 176, 0.35);
+  border-color: #1dd3b0;
+}
+
+.insert-song-field input.ng-invalid.ng-touched,
+.insert-song-field select.ng-invalid.ng-touched {
+  border-color: #f87171;
+  outline: none;
+}
+
+.insert-song-field--toggle {
+  align-items: center;
+  grid-template-columns: 1fr auto;
+  padding-top: 1.85rem;
+}
+
+.insert-song-field--toggle input {
+  width: 1.1rem;
+  height: 1.1rem;
+  padding: 0;
+}
+
+.insert-song-form__footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 960px) {
+  .insert-song-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .insert-song-page__header {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 720px) {
+  .insert-song-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .insert-song-page__actions {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .insert-song-form__footer {
+    justify-content: stretch;
+  }
+
+  .insert-song-page__primary {
+    width: 100%;
+  }
+}

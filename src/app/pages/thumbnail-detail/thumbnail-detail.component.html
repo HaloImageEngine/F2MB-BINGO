@@ -1,0 +1,76 @@
+<section class="detail-page" *ngIf="image() as img">
+
+  <!-- Back nav -->
+  <button class="btn-back" (click)="goBack()" aria-label="Back to gallery">
+    &#8592; Gallery
+  </button>
+
+  <!-- Image stage -->
+  <div class="image-stage">
+    <div class="image-stage__spinner" *ngIf="imgLoading()">
+      <span class="spinner"></span>
+    </div>
+
+    <div class="image-stage__error" *ngIf="imgError() && !imgLoading()">
+      <span>⚠ Unable to load full-size image.</span>
+    </div>
+
+    <img
+      *ngIf="!imgError()"
+      [src]="img.ImageLocation"
+      [alt]="img.ImageType"
+      class="full-image"
+      [class.full-image--hidden]="imgLoading()"
+      (load)="onImageLoad()"
+      (error)="onImageError()" />
+  </div>
+
+  <!-- Metadata panel -->
+  <div class="meta-panel surface-card">
+    <div class="meta-row">
+      <span class="meta-label">Type</span>
+      <span class="meta-value">{{ img.ImageType }}</span>
+    </div>
+
+    <div class="meta-row" *ngIf="img.UserAlias">
+      <span class="meta-label">Uploaded by</span>
+      <span class="meta-value meta-value--accent">{{ img.UserAlias }}</span>
+    </div>
+
+    <div class="meta-row" *ngIf="img.DimWidth && img.DimHeight">
+      <span class="meta-label">Dimensions</span>
+      <span class="meta-value">{{ img.DimWidth }}&times;{{ img.DimHeight }}
+        <span class="meta-sub" *ngIf="img.ImageOrientation">&nbsp;· {{ img.ImageOrientation }}</span>
+      </span>
+    </div>
+
+    <div class="meta-row" *ngIf="img.Size">
+      <span class="meta-label">Size</span>
+      <span class="meta-value">{{ (img.Size / 1024) | number:'1.0-0' }} KB</span>
+    </div>
+
+    <div class="meta-row">
+      <span class="meta-label">Status</span>
+      <span class="meta-value">
+        <span class="status-tag" [class.status-tag--ok]="img.Active" [class.status-tag--off]="!img.Active">
+          {{ img.Active ? 'Active' : 'Inactive' }}
+        </span>
+        &nbsp;
+        <span class="status-tag" [class.status-tag--ok]="img.Approved" [class.status-tag--warn]="!img.Approved">
+          {{ img.Approved ? 'Approved' : 'Pending Approval' }}
+        </span>
+      </span>
+    </div>
+
+    <div class="meta-row">
+      <span class="meta-label">Created</span>
+      <span class="meta-value">{{ img.CreateDate | date:'medium' }}</span>
+    </div>
+
+    <div class="meta-row">
+      <span class="meta-label">Image ID</span>
+      <span class="meta-value meta-value--muted">#{{ img.ImageId }}</span>
+    </div>
+  </div>
+
+</section>

@@ -1,0 +1,259 @@
+.card-overview-page {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.25rem 1.5rem 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.card-overview-page__header {
+  padding: 1.25rem 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid var(--border-soft, rgba(148, 163, 184, 0.25));
+  background: linear-gradient(145deg, rgba(11, 18, 32, 0.94), rgba(19, 28, 46, 0.88));
+}
+
+.card-overview-page__back {
+  display: inline-flex;
+  margin-bottom: 0.65rem;
+  color: var(--accent-teal, #5eead4);
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.card-overview-page__back:hover {
+  text-decoration: underline;
+}
+
+.card-overview-page__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0.5rem;
+}
+
+.card-overview-page__nav-link {
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.45rem;
+  border: 1px solid rgba(94, 234, 212, 0.35);
+  color: var(--accent-teal, #5eead4);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.card-overview-page__nav-link:hover {
+  background: rgba(94, 234, 212, 0.1);
+}
+
+.card-overview-page__nav-link.is-active {
+  background: rgba(94, 234, 212, 0.2);
+  border-color: var(--accent-teal, #5eead4);
+  color: #ecfdf5;
+}
+
+.card-overview-page h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.card-overview-page__copy {
+  margin: 0.5rem 0 0;
+  color: var(--text-muted, #94a3b8);
+  line-height: 1.5;
+  max-width: 48rem;
+}
+
+.card-overview-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+}
+
+.card-overview-field {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 8rem;
+}
+
+.card-overview-field span {
+  font-size: 0.8rem;
+  color: var(--text-muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.card-overview-field input {
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-soft, rgba(148, 163, 184, 0.3));
+  background: rgba(15, 23, 42, 0.6);
+  color: inherit;
+}
+
+.card-overview-btn {
+  padding: 0.55rem 1.1rem;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.card-overview-btn--primary {
+  background: var(--accent-teal, #14b8a6);
+  color: #042f2e;
+}
+
+.card-overview-btn--primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.card-overview-message--error {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background: rgba(244, 63, 94, 0.12);
+  color: #fda4af;
+}
+
+.card-overview-panel {
+  padding: 1.25rem 1.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.card-overview-panel__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.card-overview-panel__head h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  word-break: break-all;
+}
+
+.card-overview-panel__head h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.card-overview-panel__badge {
+  font-size: 0.85rem;
+  color: var(--accent-teal, #5eead4);
+}
+
+.card-overview-panel__badge--status.is-pass {
+  color: #6ee7b7;
+}
+
+.card-overview-panel__badge--status.is-warn {
+  color: #fcd34d;
+}
+
+.card-overview-panel__badge--status.is-fail {
+  color: #fca5a5;
+}
+
+.card-overview-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+  gap: 0.75rem 1.25rem;
+  margin: 0;
+}
+
+.card-overview-summary div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.card-overview-summary dt {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.card-overview-summary dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.card-overview-inning-list {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.card-overview-inning-list__label {
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+
+.card-overview-table-wrap {
+  overflow-x: auto;
+}
+
+.card-overview-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.card-overview-table th,
+.card-overview-table td {
+  padding: 0.45rem 0.65rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-soft, rgba(148, 163, 184, 0.2));
+}
+
+.card-overview-table th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted, #94a3b8);
+}
+
+.card-overview-sync-status {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.card-overview-sync-status.is-pass {
+  color: #6ee7b7;
+  background: rgba(16, 185, 129, 0.15);
+}
+
+.card-overview-sync-status.is-warn {
+  color: #fcd34d;
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.card-overview-sync-status.is-fail {
+  color: #fda4af;
+  background: rgba(244, 63, 94, 0.12);
+}
+
+.card-overview-status-cell.is-pass {
+  color: #6ee7b7;
+  font-weight: 600;
+}
+
+.card-overview-status-cell.is-warn {
+  color: #fcd34d;
+  font-weight: 600;
+}
+
+.card-overview-status-cell.is-fail {
+  color: #fda4af;
+  font-weight: 600;
+}

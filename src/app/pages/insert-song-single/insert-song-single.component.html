@@ -1,0 +1,166 @@
+<section class="insert-song-page">
+  <header class="insert-song-page__header">
+    <div>
+      <a routerLink="/console" class="insert-song-page__back">&larr; Back to Console</a>
+      <h1>Insert Single Song</h1>
+      <p class="insert-song-page__copy">Create one song at a time using API-backed dropdowns for the lookup-driven fields.</p>
+    </div>
+
+    <div class="insert-song-page__actions">
+      <a routerLink="/console/songs" class="insert-song-page__link">View Song Library</a>
+      <button type="button" class="insert-song-page__secondary" (click)="resetForm()">Clear Form</button>
+    </div>
+  </header>
+
+  <section class="insert-song-shell">
+    <aside class="insert-song-summary">
+      <div class="insert-song-summary__card">
+        <span class="insert-song-summary__label">Lookup Status</span>
+        <strong>{{ loadingLookups() ? 'Loading' : 'Ready' }}</strong>
+        <small>Artist type, tempo, decade, era, and difficulty values come from the lookup APIs.</small>
+      </div>
+
+      <div class="insert-song-summary__card">
+        <span class="insert-song-summary__label">Required Fields</span>
+        <strong>11 fields</strong>
+        <small>Text and dropdown inputs marked with an asterisk must be filled before submitting.</small>
+      </div>
+
+      <div class="insert-song-summary__card" *ngIf="success() as successMessage">
+        <span class="insert-song-summary__label">Last Result</span>
+        <strong class="insert-song-summary__success">Inserted</strong>
+        <small>{{ successMessage }}</small>
+      </div>
+    </aside>
+
+    <form class="insert-song-form" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="insert-song-form__state" *ngIf="loadingLookups()">Loading lookup values...</div>
+      <div class="insert-song-form__state insert-song-form__state--error" *ngIf="error() as errorMessage">{{ errorMessage }}</div>
+      <div class="insert-song-form__state insert-song-form__state--success" *ngIf="success() as successMessage">{{ successMessage }}</div>
+
+      <div class="insert-song-grid">
+        <label class="insert-song-field">
+          <span>Title *</span>
+          <input type="text" formControlName="Title" maxlength="100" placeholder="Song title" />
+          <small class="insert-song-field__error" *ngIf="showFieldError('Title')">{{ fieldError('Title') }}</small>
+        </label>
+
+        <label class="insert-song-field">
+          <span>Artist *</span>
+          <input type="text" formControlName="Artist" maxlength="200" placeholder="Artist name" />
+          <small class="insert-song-field__error" *ngIf="showFieldError('Artist')">{{ fieldError('Artist') }}</small>
+        </label>
+
+        <label class="insert-song-field">
+          <span>Artist Type *</span>
+          <select formControlName="ArtistType">
+            <option value="">Select artist type</option>
+            <option *ngFor="let option of artistTypeOptions()" [value]="option.Name ?? ''">{{ option.Name }}</option>
+          </select>
+          <small class="insert-song-field__error" *ngIf="showFieldError('ArtistType')">{{ fieldError('ArtistType') }}</small>
+        </label>
+
+        <label class="insert-song-field">
+          <span>Genre *</span>
+          <input type="text" formControlName="Genre" maxlength="100" placeholder="Genre" />
+          <small class="insert-song-field__error" *ngIf="showFieldError('Genre')">{{ fieldError('Genre') }}</small>
+        </label>
+
+        <label class="insert-song-field">
+          <span>Subgenre *</span>
+          <input type="text" formControlName="Subgenre" maxlength="100" placeholder="Subgenre" />
+          <small class="insert-song-field__error" *ngIf="showFieldError('Subgenre')">{{ fieldError('Subgenre') }}</small>
+        </label>
+
+        <label class="insert-song-field">
+          <span>Mood *</span>
+          <input type="text" formControlName="Mood" maxlength="100" placeholder="Mood" />
+          <small class="insert-song-field__error" *ngIf="showFieldError('Mood')">{{ fieldError('Mood') }}</small>
+        </label>
+
+        <label class="insert-song-field">
+          <span>Tempo *</span>
+          <select formControlName="Tempo">
+            <option value="">Select tempo</option>
+            <option *ngFor="let option of tempoOptions()" [value]="option.Name ?? ''">{{ option.Name }}</option>
+          </select>
+          <small class="insert-song-field__error" *ngIf="showFieldError('Tempo')">{{ fieldError('Tempo') }}</small>
+        </label>
+
+        <label class="insert-song-field">
+          <span>Release Year</span>
+          <input type="number" formControlName="ReleaseYear" min="1900" max="2100" placeholder="1998" />
+          <small class="insert-song-field__error" *ngIf="showFieldError('ReleaseYear')">{{ fieldError('ReleaseYear') }}</small>
+        </label>
+
+        <label class="insert-song-field">
+          <span>Decade *</span>
+          <select formControlName="Decade">
+            <option value="">Select decade</option>
+            <option *ngFor="let option of decadeOptions()" [value]="option.Name ?? ''">{{ option.Name }}</option>
+          </select>
+          <small class="insert-song-field__error" *ngIf="showFieldError('Decade')">{{ fieldError('Decade') }}</small>
+        </label>
+
+        <label class="insert-song-field">
+          <span>Era *</span>
+          <select formControlName="Era">
+            <option value="">Select era</option>
+            <option *ngFor="let option of eraOptions()" [value]="option.Name ?? ''">{{ option.Name }}</option>
+          </select>
+          <small class="insert-song-field__error" *ngIf="showFieldError('Era')">{{ fieldError('Era') }}</small>
+        </label>
+
+        <label class="insert-song-field">
+          <span>Bingo Category *</span>
+          <input type="text" formControlName="BingoCategory" maxlength="100" placeholder="Bingo category" />
+          <small class="insert-song-field__error" *ngIf="showFieldError('BingoCategory')">{{ fieldError('BingoCategory') }}</small>
+        </label>
+
+        <label class="insert-song-field">
+          <span>Difficulty *</span>
+          <select formControlName="Difficulty">
+            <option value="">Select difficulty</option>
+            <option *ngFor="let option of difficultyOptions()" [value]="option.Name ?? ''">{{ option.Name }}</option>
+          </select>
+          <small class="insert-song-field__error" *ngIf="showFieldError('Difficulty')">{{ fieldError('Difficulty') }}</small>
+        </label>
+
+        <label class="insert-song-field">
+          <span>Chart Peak Position</span>
+          <input type="number" formControlName="ChartPeakPosition" min="1" placeholder="12" />
+          <small class="insert-song-field__error" *ngIf="showFieldError('ChartPeakPosition')">{{ fieldError('ChartPeakPosition') }}</small>
+        </label>
+
+        <label class="insert-song-field">
+          <span>Chart Country *</span>
+          <input type="text" formControlName="ChartCountry" maxlength="100" placeholder="US" />
+          <small class="insert-song-field__error" *ngIf="showFieldError('ChartCountry')">{{ fieldError('ChartCountry') }}</small>
+        </label>
+
+        <label class="insert-song-field">
+          <span>Spotify Popularity</span>
+          <input type="number" formControlName="SpotifyPopularity" min="0" max="100" placeholder="45" />
+          <small class="insert-song-field__error" *ngIf="showFieldError('SpotifyPopularity')">{{ fieldError('SpotifyPopularity') }}</small>
+        </label>
+
+        <label class="insert-song-field">
+          <span>Duration Seconds</span>
+          <input type="number" formControlName="DurationSeconds" min="0" placeholder="212" />
+          <small class="insert-song-field__error" *ngIf="showFieldError('DurationSeconds')">{{ fieldError('DurationSeconds') }}</small>
+        </label>
+
+        <label class="insert-song-field insert-song-field--toggle">
+          <span>Active</span>
+          <input type="checkbox" formControlName="Active" />
+        </label>
+      </div>
+
+      <div class="insert-song-form__footer">
+        <button type="submit" class="insert-song-page__primary" [disabled]="saving() || loadingLookups()">
+          {{ saving() ? 'Saving...' : 'Insert Song' }}
+        </button>
+      </div>
+    </form>
+  </section>
+</section>

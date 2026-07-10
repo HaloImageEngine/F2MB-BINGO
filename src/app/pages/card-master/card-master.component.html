@@ -1,0 +1,297 @@
+<section class="card-master-page">
+  <header class="card-master-page__header">
+    <div class="card-master-page__hero">
+      <a routerLink="/console" class="card-master-page__back">&larr; Back to Console</a>
+      <div class="card-master-page__title-row">
+        <h1>Card Master</h1>
+        <p class="card-master-page__copy">
+          Set Game ID, Call_List_ID, Inning, and Genre, then generate or load printed cards for review.
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <section class="card-master-controls">
+    <div class="card-master-controls__grid">
+      <label class="card-master-field">
+        <span>Game ID</span>
+        <input
+          type="number"
+          min="1"
+          step="1"
+          [ngModel]="gameIdDraft()"
+          (ngModelChange)="onGameIdDraftInput($event)"
+          (blur)="commitGameIdFromDraft()"
+          (keydown.enter)="commitGameIdFromDraft(); $event.preventDefault()"
+          aria-label="Game ID" />
+      </label>
+      <label class="card-master-field card-master-field--call-list">
+        <span>Call List ID</span>
+        <select
+          [ngModel]="callListId()"
+          (ngModelChange)="setCallListIdFromInput($event)"
+          aria-label="Call List ID"
+          [disabled]="!callListDropdownReady() || callListIdSelectOptions().length === 0">
+          @if (!callListDropdownReady()) {
+            <option [ngValue]="null" disabled>Loading call lists…</option>
+          } @else if (callListIdSelectOptions().length === 0) {
+            <option [ngValue]="null" disabled>No call lists for User_ID {{ currentUser()?.UserId ?? '—' }}</option>
+          } @else {
+            @for (id of callListIdSelectOptions(); track id) {
+              <option [ngValue]="id">{{ id }}</option>
+            }
+          }
+        </select>
+      </label>
+      <label class="card-master-field">
+        <span>Inning</span>
+        <input
+          type="number"
+          min="1"
+          step="1"
+          [ngModel]="inningDraft()"
+          (ngModelChange)="onInningDraftInput($event)"
+          (blur)="commitInningFromDraft()"
+          (keydown.enter)="commitInningFromDraft(); $event.preventDefault()"
+          aria-label="Inning" />
+      </label>
+      <label class="card-master-field">
+        <span>Genre</span>
+        <select
+          [ngModel]="genre()"
+          (ngModelChange)="setGenreFromInput($event)"
+          aria-label="Genre for card generation">
+          @if (genreOptions().length === 0) {
+            <option [ngValue]="'Pop'">Pop</option>
+          } @else {
+            @for (option of genreOptions(); track option.Id != null ? option.Id : option.Name) {
+              <option [ngValue]="option.Name ?? ''">{{ option.Name }}</option>
+            }
+          }
+        </select>
+      </label>
+      <div class="card-master-controls__compact-row">
+        <label class="card-master-field card-master-field--narrow">
+          <span>Card count</span>
+          <input
+            type="number"
+            min="1"
+            step="1"
+            [ngModel]="cardCountDraft()"
+            (ngModelChange)="onCardCountDraftInput($event)"
+            (blur)="commitCardCountFromDraft()"
+            (keydown.enter)="commitCardCountFromDraft(); $event.preventDefault()"
+            aria-label="Number of cards to generate" />
+        </label>
+        <label class="card-master-field card-master-field--narrow">
+          <span class="card-master-field__label--compact">Play size</span>
+          <input
+            type="number"
+            min="1"
+            step="1"
+            [ngModel]="playlistSizeDraft()"
+            (ngModelChange)="onPlaylistSizeDraftInput($event)"
+            (blur)="commitPlaylistSizeFromDraft()"
+            (keydown.enter)="commitPlaylistSizeFromDraft(); $event.preventDefault()"
+            aria-label="Playlist size for generated cards" />
+        </label>
+      </div>
+      <div class="card-master-controls__actions">
+        <button
+          type="button"
+          class="card-master-btn card-master-btn--secondary"
+          (click)="generateCards()"
+          [disabled]="generatingCards() || loading() || !callListId()">
+          {{ generatingCards() ? 'Generating…' : 'Generate cards' }}
+        </button>
+        <button type="button" class="card-master-btn card-master-btn--primary" (click)="loadCards()" [disabled]="loading() || generatingCards()">
+          {{ loading() ? 'Loading…' : 'Load cards' }}
+        </button>
+      </div>
+    </div>
+    <div class="card-master-controls__hint">
+      <strong>Generate cards</strong> posts to <code>…/GenerateBingoCards_From_CLSongs/&#123;callListId&#125;/&#123;gameId&#125;/&#123;inning&#125;?cardCount=&amp;playlistSize=&amp;genre</code> (defaults 100 / 30).
+      Load cards uses optional query params <code>calllistid</code> and <code>inning</code>.
+    </div>
+  </section>
+
+  <div class="card-master-message card-master-message--success" *ngIf="generateNotice() as notice">{{ notice }}</div>
+  <div class="card-master-message card-master-message--error" *ngIf="error() as err">{{ err }}</div>
+  <section class="card-master-results" *ngIf="hasQueried()">
+    <div class="card-master-results__head">
+      <h2>Printed cards</h2>
+      <span class="card-master-results__count">{{ cards().length }} card(s)</span>
+    </div>
+
+    <div class="card-master-empty" *ngIf="!loading() && !error() && cards().length === 0">
+      No cards returned. Adjust Game ID / Call_List_ID / Inning and choose Load cards.
+    </div>
+
+    <div class="card-master-tabs" *ngIf="cards().length > 0">
+      <div class="card-master-tabs__bar" role="tablist" aria-label="Card master views">
+        <button
+          type="button"
+          class="card-master-tabs__tab"
+          role="tab"
+          id="card-master-tab-tab1"
+          [class.is-active]="activeTab() === 'tab1'"
+          [attr.aria-selected]="activeTab() === 'tab1'"
+          aria-controls="card-master-panel-tab1"
+          (click)="selectTab('tab1')"
+        >
+          Card Numbers
+        </button>
+        <button
+          type="button"
+          class="card-master-tabs__tab"
+          role="tab"
+          id="card-master-tab-tab2"
+          [class.is-active]="activeTab() === 'tab2'"
+          [attr.aria-selected]="activeTab() === 'tab2'"
+          aria-controls="card-master-panel-tab2"
+          (click)="selectTab('tab2')"
+        >
+          Check Winner
+        </button>
+        <button
+          type="button"
+          class="card-master-tabs__tab"
+          role="tab"
+          id="card-master-tab-tab3"
+          [class.is-active]="activeTab() === 'tab3'"
+          [attr.aria-selected]="activeTab() === 'tab3'"
+          aria-controls="card-master-panel-tab3"
+          (click)="selectTab('tab3')"
+        >
+          Card Review
+        </button>
+      </div>
+
+      <!-- Tab1: Card Numbers -->
+      <div
+        class="card-master-tabs__panel"
+        id="card-master-panel-tab1"
+        role="tabpanel"
+        aria-labelledby="card-master-tab-tab1"
+        *ngIf="activeTab() === 'tab1'"
+      >
+        <p class="card-master-tabs__intro">
+          All cards by Card ID. Click a row to show song numbers on the 5×5 grid.
+        </p>
+
+        <div class="card-master-master-list" role="list">
+          <div
+            class="card-master-master-row"
+            *ngFor="let card of cards(); trackBy: trackByCardId"
+            role="listitem"
+            [class.is-expanded]="isCardExpanded(card.CardID)"
+          >
+            <button
+              type="button"
+              class="card-master-master-row__summary"
+              (click)="toggleCardRow(card, $event)"
+              [attr.aria-expanded]="isCardExpanded(card.CardID)"
+              [attr.aria-controls]="'card-master-detail-' + card.CardID"
+            >
+              <span class="card-master-master-row__chevron" aria-hidden="true">
+                {{ isCardExpanded(card.CardID) ? '▼' : '▶' }}
+              </span>
+              <span class="card-master-master-row__cell card-master-master-row__cell--id">
+                <span class="card-master-master-row__label">Card ID</span>
+                {{ card.CardID }}
+              </span>
+              <span class="card-master-master-row__cell">
+                <span class="card-master-master-row__label">Game ID</span>
+                {{ card.GameID }}
+              </span>
+              <span class="card-master-master-row__cell">
+                <span class="card-master-master-row__label">Call list</span>
+                {{ card.CallListID ?? '—' }}
+              </span>
+              <span class="card-master-master-row__cell">
+                <span class="card-master-master-row__label">Inning</span>
+                {{ card.Inning ?? '—' }}
+              </span>
+              <span class="card-master-master-row__cell">
+                <span class="card-master-master-row__label">User ID</span>
+                {{ card.UserID }}
+              </span>
+              <span class="card-master-master-row__cell">
+                <span class="card-master-master-row__label">Squares</span>
+                {{ card.Squares.length }}
+              </span>
+              <span class="card-master-master-row__cell">
+                <span class="card-master-master-row__label">Player</span>
+                {{ card.CardPlayerName || '—' }}
+              </span>
+              <span class="card-master-master-row__cell">
+                <span class="card-master-master-row__label">Winner</span>
+                {{ card.CardIsWinner ? 'Yes' : 'No' }}
+              </span>
+              <span class="card-master-master-row__cell card-master-master-row__cell--date">
+                <span class="card-master-master-row__label">Created</span>
+                {{ card.CardDateCreate | date: 'short' }}
+              </span>
+            </button>
+
+            <div
+              class="card-master-child-detail"
+              *ngIf="isCardExpanded(card.CardID)"
+              [id]="'card-master-detail-' + card.CardID"
+            >
+              <p class="card-master-child-detail__title">Card {{ card.CardID }} — song numbers</p>
+              <div class="card-master-square-grid" role="grid" aria-label="Bingo card song numbers">
+                <div
+                  class="card-master-square-grid__row"
+                  *ngFor="let row of getSquareGrid(card); let rowIndex = index"
+                  role="row"
+                >
+                  <div
+                    class="card-master-square-grid__cell"
+                    *ngFor="let square of row"
+                    role="gridcell"
+                    [class.is-free]="square.IsFreeSpace"
+                    [class.is-called]="square.IsCalled"
+                  >
+                    <span class="card-master-square-grid__song">{{ songNumberLabel(square) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab2: Check Winner -->
+      <div
+        class="card-master-tabs__panel"
+        id="card-master-panel-tab2"
+        role="tabpanel"
+        aria-labelledby="card-master-tab-tab2"
+        *ngIf="activeTab() === 'tab2'"
+      >
+        <div class="card-master-placeholder">
+          <h3>Check Winner</h3>
+          <p>
+            Placeholder for winner REST API calls (e.g. Check_ForWinner, Check_ForWinner_2Lines) and a list of all
+            winners for this game.
+          </p>
+        </div>
+      </div>
+
+      <!-- Tab3: Card Review -->
+      <div
+        class="card-master-tabs__panel"
+        id="card-master-panel-tab3"
+        role="tabpanel"
+        aria-labelledby="card-master-tab-tab3"
+        *ngIf="activeTab() === 'tab3'"
+      >
+        <div class="card-master-placeholder">
+          <h3>Card Review</h3>
+          <p>Placeholder for card statistics and review summaries across the loaded deck.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</section>

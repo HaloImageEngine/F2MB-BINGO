@@ -1,0 +1,98 @@
+<section class="login-page">
+  <div class="login-card">
+    <header class="login-card__header">
+      <p class="login-card__eyebrow">Family Bingo</p>
+      <h1>Create account</h1>
+      <p class="login-card__copy">Register to play Family Bingo with your group.</p>
+    </header>
+
+    <form class="login-form" (ngSubmit)="onSubmit()">
+      <label class="login-field" for="firstName">
+        <span>First name</span>
+        <input id="firstName" type="text" [(ngModel)]="firstName" name="firstName" required />
+      </label>
+
+      <label class="login-field" for="middleInitial">
+        <span>Middle initial</span>
+        <input id="middleInitial" type="text" [(ngModel)]="middleInitial" name="middleInitial" maxlength="5" />
+      </label>
+
+      <label class="login-field" for="lastName">
+        <span>Last name</span>
+        <input id="lastName" type="text" [(ngModel)]="lastName" name="lastName" required />
+      </label>
+
+      <label class="login-field" for="email">
+        <span>Email</span>
+        <input id="email" type="email" [(ngModel)]="email" name="email" autocomplete="email" required />
+      </label>
+
+      <label class="login-field" for="userAlias">
+        <span>User alias</span>
+        <input
+          id="userAlias"
+          type="text"
+          [(ngModel)]="userAlias"
+          name="userAlias"
+          autocomplete="username"
+          minlength="6"
+          maxlength="20"
+          required />
+        <small class="login-field__hint">6–20 characters. This is what you use to sign in.</small>
+      </label>
+
+      <label class="login-field" for="password">
+        <span>Password</span>
+        <input
+          id="password"
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          autocomplete="new-password"
+          required />
+      </label>
+
+      <input type="hidden" [(ngModel)]="userType" name="userType" />
+
+      <label class="login-field" for="zip">
+        <span>Zip</span>
+        <input id="zip" type="text" [(ngModel)]="zip" name="zip" autocomplete="postal-code" />
+      </label>
+
+      <label class="login-field" for="phoneNum">
+        <span>Phone</span>
+        <input
+          id="phoneNum"
+          type="tel"
+          [ngModel]="phoneNum"
+          (ngModelChange)="onPhoneChange($event)"
+          name="phoneNum"
+          autocomplete="tel"
+          maxlength="12"
+          inputmode="numeric"
+          placeholder="555-555-5555" />
+      </label>
+
+      @if (error) {
+        <p class="login-form__error" role="alert">{{ error }}</p>
+      }
+
+      @if (success) {
+        <p class="login-form__success" role="status">{{ success }}</p>
+      }
+
+      <button type="submit" class="login-form__submit" [disabled]="submitting">
+        {{ submitting ? 'Creating account…' : 'Create account' }}
+      </button>
+
+      <p class="login-form__footer">
+        Already have an account?
+        <a routerLink="/login">Sign in</a>
+      </p>
+    </form>
+  </div>
+
+  <p class="login-page__build" title="Build identifier from environment file">
+    Build {{ appVersion }} · {{ buildKind }}
+  </p>
+</section>

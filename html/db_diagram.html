@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DJGogi Database Diagram</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0c0c18;
+    font-family: 'Segoe UI', sans-serif;
+    color: #e0e0f0;
+    padding: 30px 20px 80px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 1.9rem;
+    letter-spacing: 3px;
+    color: #c084fc;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #4b5563;
+    margin-bottom: 40px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  /* ── canvas ── */
+  .canvas {
+    position: relative;
+    width: 1020px;
+    height: 1100px;
+    margin: 0 auto;
+  }
+
+  /* ── table cards ── */
+  .tbl {
+    position: absolute;
+    width: 210px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.07);
+    box-shadow: 0 6px 28px rgba(0,0,0,0.55);
+  }
+  .tbl-header {
+    padding: 9px 13px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.8px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .tbl-body { background: #181828; padding: 6px 0; }
+  .col {
+    padding: 3px 12px;
+    font-size: 0.69rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    color: #94a3b8;
+  }
+  .col:last-child { border-bottom: none; }
+  .col-name { color: #cbd5e1; }
+  .col-type { color: #475569; font-size: 0.63rem; }
+  .sp { width: 16px; flex-shrink: 0; }
+  .badge {
+    font-size: 0.58rem; padding: 1px 4px;
+    border-radius: 3px; font-weight: 800;
+    text-transform: uppercase; flex-shrink: 0;
+  }
+  .pk  { background:#7c3aed; color:#fff; }
+  .fk  { background:#1d4ed8; color:#bfdbfe; }
+  .more { color:#374151; font-style:italic; font-size:0.65rem; padding:4px 12px; }
+
+  /* colour themes */
+  .t-users   .tbl-header { background: linear-gradient(135deg,#7c3aed,#6d28d9); }
+  .t-usinfo  .tbl-header { background: linear-gradient(135deg,#5b21b6,#4c1d95); }
+  .t-master  .tbl-header { background: linear-gradient(135deg,#059669,#047857); }
+  .t-songs   .tbl-header { background: linear-gradient(135deg,#d97706,#b45309); }
+  .t-game    .tbl-header { background: linear-gradient(135deg,#2563eb,#1d4ed8); }
+  .t-cards   .tbl-header { background: linear-gradient(135deg,#0891b2,#0e7490); }
+  .t-winner  .tbl-header { background: linear-gradient(135deg,#dc2626,#b91c1c); }
+  .t-called  .tbl-header { background: linear-gradient(135deg,#db2777,#be185d); }
+  .t-djreq   .tbl-header { background: linear-gradient(135deg,#ea580c,#c2410c); }
+  .t-tip     .tbl-header { background: linear-gradient(135deg,#0d9488,#0f766e); }
+  .t-event   .tbl-header { background: linear-gradient(135deg,#475569,#334155); }
+  .t-sponsor .tbl-header { background: linear-gradient(135deg,#374151,#1f2937); }
+
+  /* positions — 4 columns, 3 rows */
+  /* col x:  10  |  265  |  530  |  790  */
+  /* row y:  40  |  430  |  790  */
+  .t-users   { top:40px;  left:10px;  }
+  .t-master  { top:40px;  left:265px; }
+  .t-game    { top:40px;  left:530px; }
+  .t-cards   { top:40px;  left:790px; }
+
+  .t-usinfo  { top:430px; left:10px;  }
+  .t-songs   { top:430px; left:265px; }
+  .t-winner  { top:430px; left:530px; }
+  .t-called  { top:430px; left:790px; }
+
+  .t-djreq   { top:790px; left:10px;  }
+  .t-tip     { top:790px; left:265px; }
+  .t-event   { top:790px; left:530px; }
+  .t-sponsor { top:790px; left:790px; }
+
+  /* ── SVG ── */
+  svg.lines {
+    position:absolute; top:0; left:0;
+    width:100%; height:100%;
+    pointer-events:none; overflow:visible;
+  }
+  .ln { fill:none; stroke-width:1.7; }
+
+  /* ── legend ── */
+  .legend {
+    width:1020px; margin:18px auto 0;
+    display:flex; flex-wrap:wrap; gap:20px; justify-content:center;
+  }
+  .leg { display:flex; align-items:center; gap:7px; font-size:0.73rem; color:#9ca3af; }
+  .lswatch { width:30px; height:2px; border-radius:2px; }
+  .ldash   { width:30px; height:0; border-top:2px dashed #6b7280; }
+
+  /* ── section labels ── */
+  .section-label {
+    position:absolute;
+    font-size:0.65rem; font-weight:700; letter-spacing:1.5px;
+    text-transform:uppercase; color:#374151;
+    left:-2px;
+  }
+
+  .note {
+    text-align:center; margin-top:22px;
+    font-size:0.68rem; color:#374151; letter-spacing:0.5px;
+  }
+
+  /* highlight new */
+  .new-badge {
+    font-size:0.55rem; background:#f59e0b; color:#000;
+    padding:1px 4px; border-radius:3px; font-weight:800;
+    margin-left:4px;
+  }
+</style>
+</head>
+<body>
+
+<h1>🎵 DJGogi — Music Bingo Database</h1>
+<p class="subtitle">haloimag_djgogi &nbsp;·&nbsp; Full Schema Relationship Diagram &nbsp;·&nbsp; 13 Tables</p>
+
+<div class="canvas">
+
+<!-- Section labels -->
+<div class="section-label" style="top:22px;">▸ User Management &amp; Core Game</div>
+<div class="section-label" style="top:412px;">▸ Song Lists, Cards &amp; Game Tracking</div>
+<div class="section-label" style="top:772px;">▸ DJ Requests, Tips &amp; Sponsors</div>
+
+<!-- ═══════════════════════════════════════════════
+     ROW 1
+═══════════════════════════════════════════════ -->
+
+<!-- USERS -->
+<div class="tbl t-users">
+  <div class="tbl-header">👤 Users <span class="new-badge">NEW</span></div>
+  <div class="tbl-body">
+    <div class="col"><span class="badge pk">PK</span><span class="col-name">UserId</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">UserGuid</span><span class="col-type">uniqueid</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">UserName</span><span class="col-type">nvarchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Email</span><span class="col-type">nvarchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">DisplayName</span><span class="col-type">nvarchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">PasswordHash</span><span class="col-type">varchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">EmailConfirmed</span><span class="col-type">bit</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">TwoFactorEnabled</span><span class="col-type">bit</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">IsActive</span><span class="col-type">bit</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">LastLoginAt</span><span class="col-type">datetime2</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">CreatedAt</span><span class="col-type">datetime2</span></div>
+  </div>
+</div>
+
+<!-- CALLLIST_MASTER -->
+<div class="tbl t-master">
+  <div class="tbl-header">📋 CallList_Master</div>
+  <div class="tbl-body">
+    <div class="col"><span class="badge pk">PK</span><span class="col-name">Call_List_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="badge fk">FK</span><span class="col-name">User_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Call_List_Name</span><span class="col-type">varchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Call_List_Genre</span><span class="col-type">varchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Call_List_Decade</span><span class="col-type">varchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Call_List_Era</span><span class="col-type">varchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Call_List_SongCount</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">InningNumber</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Call_List_IsActive</span><span class="col-type">bit</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Call_List_CreatedAt</span><span class="col-type">datetime2</span></div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="tbl t-game">
+  <div class="tbl-header">🎮 Game</div>
+  <div class="tbl-body">
+    <div class="col"><span class="badge pk">PK</span><span class="col-name">Game_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="badge fk">FK</span><span class="col-name">User_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="badge fk">FK</span><span class="col-name">Call_List_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="badge fk">FK</span><span class="col-name">Game_WinnerCard_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Game_Number</span><span class="col-type">tinyint</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Game_Inning</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Game_Name</span><span class="col-type">varchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Game_Status</span><span class="col-type">varchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Game_StartTime</span><span class="col-type">datetime2</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Game_EndTime</span><span class="col-type">datetime2</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Game_WinPattern</span><span class="col-type">varchar</span></div>
+  </div>
+</div>
+
+<!-- CARDS -->
+<div class="tbl t-cards">
+  <div class="tbl-header">🃏 Cards</div>
+  <div class="tbl-body">
+    <div class="col"><span class="badge pk">PK</span><span class="col-name">Card_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="badge fk">FK</span><span class="col-name">User_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="badge fk">FK</span><span class="col-name">Game_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="badge fk">FK</span><span class="col-name">Call_List_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Inning</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Card_PlayerName</span><span class="col-type">varchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Card_PlayerEmail</span><span class="col-type">varchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Sq_B1..Sq_O5</span><span class="col-type">int×24</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Sq_*_Called</span><span class="col-type">bit×25</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Card_IsWinner</span><span class="col-type">bit</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Card_SeedKey</span><span class="col-type">varchar</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     ROW 2
+═══════════════════════════════════════════════ -->
+
+<!-- USERSINFO -->
+<div class="tbl t-usinfo">
+  <div class="tbl-header">📇 UsersInfo <span class="new-badge">NEW</span></div>
+  <div class="tbl-body">
+    <div class="col"><span class="badge pk">PK</span><span class="col-name">UserInfoId</span><span class="col-type">int</span></div>
+    <div class="col"><span class="badge fk">FK</span><span class="col-name">UserId</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">FirstName</span><span class="col-type">nvarchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">MiddleInitial</span><span class="col-type">nchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">LastName</span><span class="col-type">nvarchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">UserAlias</span><span class="col-type">varchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">City / State / Zip</span><span class="col-type">nvarchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">BirthMonth</span><span class="col-type">tinyint</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">EmailAddress</span><span class="col-type">nvarchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">PhoneNum</span><span class="col-type">nvarchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">CreatedAt / UpdatedAt</span><span class="col-type">datetime2</span></div>
+  </div>
+</div>
+
+<!-- CALLLIST_SONGS -->
+<div class="tbl t-songs">
+  <div class="tbl-header">🎵 CallList_Songs</div>
+  <div class="tbl-body">
+    <div class="col"><span class="badge pk">PK</span><span class="col-name">CL_Song_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="badge fk">FK</span><span class="col-name">Call_List_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">song_id</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Inning</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">title</span><span class="col-type">nvarchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">artist / featured_artist</span><span class="col-type">nvarchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">genre / decade / era</span><span class="col-type">varchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">release_year</span><span class="col-type">smallint</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">explicit</span><span class="col-type">bit</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">GeneratedCode</span><span class="col-type">varchar(3)</span></div>
+  </div>
+</div>
+
+<!-- CALLLIST_WINNER -->
+<div class="tbl t-winner">
+  <div class="tbl-header">🏆 CallList_Winner</div>
+  <div class="tbl-body">
+    <div class="col"><span class="badge pk">PK</span><span class="col-name">Call_List_Winner_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="badge fk">FK</span><span class="col-name">Game_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="badge fk">FK</span><span class="col-name">Call_List_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="badge fk">FK</span><span class="col-name">Call_List_WinningCard</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Inning</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Call_List_WinningPatter</span><span class="col-type">varchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">NumofSongsCalled</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Call_List_CreatedAt</span><span class="col-type">datetime2</span></div>
+  </div>
+</div>
+
+<!-- GAME_CALLED -->
+<div class="tbl t-called">
+  <div class="tbl-header">📣 Game_Called</div>
+  <div class="tbl-body">
+    <div class="col"><span class="badge pk">PK</span><span class="col-name">Called_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="badge fk">FK</span><span class="col-name">Game_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="badge fk">FK</span><span class="col-name">Call_List_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Inning</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Song_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Song_Title</span><span class="col-type">nvarchar ✦</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Song_Artist</span><span class="col-type">nvarchar ✦</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">DateTimeStamp</span><span class="col-type">datetime</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">ThisNumberAWinner</span><span class="col-type">bit</span></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     ROW 3
+═══════════════════════════════════════════════ -->
+
+<!-- DJREQUEST -->
+<div class="tbl t-djreq">
+  <div class="tbl-header">🎤 DJRequest <span class="new-badge">NEW</span></div>
+  <div class="tbl-body">
+    <div class="col"><span class="badge pk">PK</span><span class="col-name">Req_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="badge fk">FK</span><span class="col-name">DJ_ID → Users</span><span class="col-type">int</span></div>
+    <div class="col"><span class="badge fk">FK</span><span class="col-name">Event_Code</span><span class="col-type">char(3)</span></div>
+    <div class="col"><span class="badge fk">FK</span><span class="col-name">Tip_Code</span><span class="col-type">varchar(5)</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Song_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Song_Title</span><span class="col-type">varchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Song_Artist</span><span class="col-type">varchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Tip_Amount</span><span class="col-type">decimal</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">DateTime</span><span class="col-type">datetime</span></div>
+  </div>
+</div>
+
+<!-- TIPTYPE -->
+<div class="tbl t-tip">
+  <div class="tbl-header">💰 TipType <span class="new-badge">NEW</span></div>
+  <div class="tbl-body">
+    <div class="col"><span class="badge pk">PK</span><span class="col-name">Tip_Code</span><span class="col-type">varchar(5)</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Tip_Type</span><span class="col-type">varchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Bank_Type</span><span class="col-type">varchar</span></div>
+  </div>
+</div>
+
+<!-- EVENTTYPE -->
+<div class="tbl t-event">
+  <div class="tbl-header">📅 EventType <span class="new-badge">NEW</span></div>
+  <div class="tbl-body">
+    <div class="col"><span class="badge pk">PK</span><span class="col-name">Event_ID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Event_Code</span><span class="col-type">char(3) UNIQUE</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Event_Type</span><span class="col-type">varchar(50)</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Event_Date</span><span class="col-type">date</span></div>
+  </div>
+</div>
+
+<!-- QRSPONSORS -->
+<div class="tbl t-sponsor">
+  <div class="tbl-header">📱 QRSponsors</div>
+  <div class="tbl-body">
+    <div class="col"><span class="badge pk">PK</span><span class="col-name">QRID</span><span class="col-type">int</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Title</span><span class="col-type">varchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">URL</span><span class="col-type">varchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">AdPosition</span><span class="col-type">varchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">ActiveStartDate</span><span class="col-type">date</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">ActiveEndDate</span><span class="col-type">date</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">Contact / Phone</span><span class="col-type">varchar</span></div>
+    <div class="col"><span class="sp"></span><span class="col-name">ContactURL</span><span class="col-type">varchar</span></div>
+    <div class="more" style="color:#374151">↳ Standalone — no FK relations</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SVG RELATIONSHIP LINES
+     Table approximate right/left/top/bottom edges:
+     Col x-left:  C1=10   C2=265  C3=530  C4=790
+     Col x-right: C1=220  C2=475  C3=740  C4=1000
+     Col x-mid:   C1=115  C2=370  C3=635  C4=895
+     Row y-top:   R1=40   R2=430  R3=790
+     Card heights (approx):
+       Users=292, CLMaster=260, Game=276, Cards=292
+       UsersInfo=292, CLSongs=260, Winner=228, Called=244
+       DJReq=244, TipType=100, EventType=110, QRSponsors=228
+═══════════════════════════════════════════════ -->
+<svg class="lines">
+  <defs>
+    <!-- arrowheads per colour -->
+    <marker id="ah-purple" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#7c3aed"/></marker>
+    <marker id="ah-green"  markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#059669"/></marker>
+    <marker id="ah-cyan"   markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#0891b2"/></marker>
+    <marker id="ah-pink"   markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#db2777"/></marker>
+    <marker id="ah-orange" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#ea580c"/></marker>
+    <marker id="ah-teal"   markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#0d9488"/></marker>
+    <marker id="ah-gray"   markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#475569"/></marker>
+  </defs>
+
+  <!-- ── ROW 1 horizontal connections ── -->
+
+  <!-- Users → CallList_Master  (User_ID) -->
+  <path d="M220,90 H264" class="ln" stroke="#7c3aed" marker-end="url(#ah-purple)"/>
+  <text x="242" y="84" font-size="9" fill="#7c3aed" text-anchor="middle">User_ID</text>
+
+  <!-- CallList_Master → Game  (Call_List_ID) -->
+  <path d="M475,90 H529" class="ln" stroke="#059669" marker-end="url(#ah-green)"/>
+  <text x="502" y="84" font-size="9" fill="#059669" text-anchor="middle">Call_List_ID</text>
+
+  <!-- Game → Cards  (Game_ID) -->
+  <path d="M740,90 H789" class="ln" stroke="#0891b2" marker-end="url(#ah-cyan)"/>
+  <text x="764" y="84" font-size="9" fill="#0891b2" text-anchor="middle">Game_ID</text>
+
+  <!-- ── ROW 1 → ROW 2 vertical connections ── -->
+
+  <!-- Users → UsersInfo  (UserId) -->
+  <path d="M115,332 V429" class="ln" stroke="#7c3aed" marker-end="url(#ah-purple)"/>
+  <text x="88" y="388" font-size="9" fill="#7c3aed" text-anchor="middle" transform="rotate(-90,88,388)">UserId</text>
+
+  <!-- CallList_Master → CallList_Songs  (Call_List_ID) -->
+  <path d="M370,300 V429" class="ln" stroke="#059669" marker-end="url(#ah-green)"/>
+  <text x="344" y="372" font-size="9" fill="#059669" text-anchor="middle" transform="rotate(-90,344,372)">Call_List_ID</text>
+
+  <!-- Game → CallList_Winner  (Game_ID) -->
+  <path d="M635,316 V429" class="ln" stroke="#0891b2" marker-end="url(#ah-cyan)"/>
+  <text x="609" y="380" font-size="9" fill="#0891b2" text-anchor="middle" transform="rotate(-90,609,380)">Game_ID</text>
+
+  <!-- Game → Game_Called (Game_ID) — diagonal from Game right edge to Game_Called top -->
+  <path d="M740,120 C780,120 895,300 895,429" class="ln" stroke="#db2777" stroke-dasharray="5,3" marker-end="url(#ah-pink)"/>
+  <text x="822" y="285" font-size="9" fill="#db2777" text-anchor="middle">Game_ID</text>
+
+  <!-- ── CROSS connections (curved, dashed) ── -->
+
+  <!-- CallList_Master → Cards (Call_List_ID) — arc over Game -->
+  <path d="M475,110 C550,70 720,70 789,110" class="ln" stroke="#059669" stroke-dasharray="4,3" marker-end="url(#ah-green)"/>
+  <text x="632" y="64" font-size="9" fill="#059669" text-anchor="middle">Call_List_ID</text>
+
+  <!-- Users → Game (User_ID) — arc -->
+  <path d="M220,130 C350,130 420,130 529,130" class="ln" stroke="#7c3aed" stroke-dasharray="4,3" marker-end="url(#ah-purple)"/>
+
+  <!-- Users → Cards (User_ID) — arc -->
+  <path d="M220,150 C400,150 680,150 789,150" class="ln" stroke="#7c3aed" stroke-dasharray="4,3" marker-end="url(#ah-purple)"/>
+
+  <!-- CallList_Master → CallList_Winner (Call_List_ID) — cross R1→R2 -->
+  <path d="M370,300 C370,370 490,370 530,450" class="ln" stroke="#059669" stroke-dasharray="4,3" marker-end="url(#ah-green)"/>
+
+  <!-- CallList_Master → Game_Called (Call_List_ID) — long arc -->
+  <path d="M475,120 C700,40 950,300 895,429" class="ln" stroke="#059669" stroke-dasharray="3,4" marker-end="url(#ah-green)" opacity="0.5"/>
+
+  <!-- Cards → CallList_Winner (WinningCard) — from right of Cards down-left to right of Winner -->
+  <path d="M895,332 C895,390 760,390 740,450" class="ln" stroke="#0891b2" stroke-dasharray="4,3" marker-end="url(#ah-cyan)"/>
+  <text x="840" y="398" font-size="9" fill="#0891b2" text-anchor="middle">WinningCard</text>
+
+  <!-- CallList_Songs → Cards (song_id → Sq_*) — cross R2→R1 -->
+  <path d="M475,490 C700,500 895,390 895,332" class="ln" stroke="#d97706" stroke-dasharray="4,3" marker-end="url(#ah-orange)"/>
+  <text x="700" y="500" font-size="9" fill="#d97706" text-anchor="middle">song_id → Sq_B1..Sq_O5</text>
+
+  <!-- ── ROW 2 → ROW 3 connections ── -->
+
+  <!-- Users → DJRequest (DJ_ID) — vertical through row 2 -->
+  <path d="M115,332 C80,550 80,700 115,789" class="ln" stroke="#ea580c" stroke-dasharray="5,3" marker-end="url(#ah-orange)"/>
+  <text x="56" y="580" font-size="9" fill="#ea580c" text-anchor="middle" transform="rotate(-90,56,580)">DJ_ID</text>
+
+  <!-- DJRequest → TipType (Tip_Code) -->
+  <path d="M220,840 H264" class="ln" stroke="#0d9488" marker-end="url(#ah-teal)"/>
+  <text x="242" y="834" font-size="9" fill="#0d9488" text-anchor="middle">Tip_Code</text>
+
+  <!-- DJRequest → EventType (Event_Code) -->
+  <path d="M220,860 H529" class="ln" stroke="#475569" stroke-dasharray="5,3" marker-end="url(#ah-gray)"/>
+  <text x="374" y="854" font-size="9" fill="#475569" text-anchor="middle">Event_Code</text>
+
+</svg>
+
+</div><!-- /canvas -->
+
+<!-- ── LEGEND ── -->
+<div class="legend">
+  <div class="leg"><div class="lswatch" style="background:#7c3aed"></div> Users / User_ID reference</div>
+  <div class="leg"><div class="lswatch" style="background:#059669"></div> CallList_Master reference</div>
+  <div class="leg"><div class="lswatch" style="background:#0891b2"></div> Game / Cards reference</div>
+  <div class="leg"><div class="lswatch" style="background:#db2777"></div> Audit trail (Game_Called)</div>
+  <div class="leg"><div class="lswatch" style="background:#ea580c"></div> DJ / Request reference</div>
+  <div class="leg"><div class="lswatch" style="background:#0d9488"></div> TipType reference</div>
+  <div class="leg"><div class="ldash"></div> Implied / cascaded FK</div>
+  <div class="leg"><span style="font-size:0.65rem;background:#f59e0b;color:#000;padding:1px 5px;border-radius:3px;font-weight:800;">NEW</span> Added in latest update</div>
+
+  <div class="leg"><span style="color:#475569;font-size:0.7rem">✦ denormalized</span> field copied at write time</div>
+</div>
+
+<p class="note">haloimag_djgogi &nbsp;·&nbsp; Music Bingo + DJ Request System &nbsp;·&nbsp; 13 Tables &nbsp;·&nbsp; Generated 2026-05-30</p>
+
+</body>
+</html>

@@ -1,0 +1,112 @@
+<section class="page admin-page">
+  <header class="page__header">
+    <div class="page__header-row">
+      <div>
+        <span class="tag accent-iris">Admin</span>
+        <h2>Control panel</h2>
+        <p>System status, audit trail, and error log from the latest 20 audit records.</p>
+      </div>
+      <button
+        type="button"
+        class="btn-refresh"
+        (click)="loadRecords()"
+        [disabled]="loading()"
+        aria-label="Refresh admin panels">
+        <span class="btn-refresh__icon" [class.spinning]="loading()">↻</span>
+        Refresh
+      </button>
+    </div>
+  </header>
+
+  <div class="state-message state-message--error" *ngIf="error()">
+    <span class="state-message__icon">⚠</span>
+    <span>{{ error() }}</span>
+    <button type="button" class="btn-retry" (click)="loadRecords()">Retry</button>
+  </div>
+
+  <div class="admin-panels">
+    <article class="surface-card admin-panel admin-panel--status">
+      <header class="admin-panel__header">
+        <p class="eyebrow">Panel 1</p>
+        <h3>Status Report</h3>
+      </header>
+
+      <div class="admin-panel__body">
+        <div class="status-loading" *ngIf="loading() && records().length === 0">Loading status…</div>
+
+        <ul class="status-list" *ngIf="!loading() || records().length > 0">
+          <li
+            *ngFor="let item of statusItems()"
+            class="status-list__item"
+            [attr.data-tone]="item.tone ?? 'muted'">
+            <span class="status-list__label">{{ item.label }}</span>
+            <span class="status-list__value">{{ item.value }}</span>
+          </li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="surface-card admin-panel admin-panel--audit">
+      <header class="admin-panel__header">
+        <p class="eyebrow">Panel 2</p>
+        <h3>Audit Log</h3>
+        <p class="admin-panel__count">{{ records().length }} entries</p>
+      </header>
+
+      <div class="admin-panel__body admin-panel__body--scroll">
+        <div class="panel-empty" *ngIf="loading() && records().length === 0">Loading audit log…</div>
+        <div class="panel-empty" *ngIf="!loading() && records().length === 0">No audit entries.</div>
+
+        <ul class="log-list" *ngIf="records().length > 0">
+          <li *ngFor="let record of records(); trackBy: trackByAuditId" class="log-list__item">
+            <div class="log-list__meta">
+              <span class="log-list__id">#{{ record.AuditID }}</span>
+              <span class="log-list__time">{{ record.DateTimeStamp | date: 'MMM d, h:mm:ss a' }}</span>
+              <span class="severity-tag" [ngClass]="severityClass(record.SeverityCode)">
+                {{ severityLabel(record.SeverityCode) }}
+              </span>
+            </div>
+            <p class="log-list__title">
+              <span class="event-tag">{{ record.EventType }}</span>
+              {{ record.Origin }} · {{ record.UserId }}
+            </p>
+            <p class="log-list__detail">{{ record.CommentShort }}</p>
+          </li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="surface-card admin-panel admin-panel--errors">
+      <header class="admin-panel__header">
+        <p class="eyebrow">Panel 3</p>
+        <h3>Error Log</h3>
+        <p class="admin-panel__count">{{ errorRecords().length }} entries</p>
+      </header>
+
+      <div class="admin-panel__body admin-panel__body--scroll">
+        <div class="panel-empty" *ngIf="loading() && records().length === 0">Loading error log…</div>
+        <div class="panel-empty" *ngIf="!loading() && errorRecords().length === 0">
+          No errors or warnings in the latest audit batch.
+        </div>
+
+        <ul class="log-list log-list--errors" *ngIf="errorRecords().length > 0">
+          <li *ngFor="let record of errorRecords(); trackBy: trackByAuditId" class="log-list__item">
+            <div class="log-list__meta">
+              <span class="log-list__id">#{{ record.AuditID }}</span>
+              <span class="log-list__time">{{ record.DateTimeStamp | date: 'MMM d, h:mm:ss a' }}</span>
+              <span class="severity-tag" [ngClass]="severityClass(record.SeverityCode)">
+                {{ severityLabel(record.SeverityCode) }}
+              </span>
+            </div>
+            <p class="log-list__title">
+              <span class="error-code" *ngIf="record.ErrorCode">{{ record.ErrorCode }}</span>
+              <span class="event-tag">{{ record.EventType }}</span>
+              {{ record.Origin }} · {{ record.UserId }}
+            </p>
+            <p class="log-list__detail">{{ record.CommentShort }}</p>
+          </li>
+        </ul>
+      </div>
+    </article>
+  </div>
+</section>

@@ -1,0 +1,19 @@
+<div *ngIf="customer" class="cust-detail">
+  <h3>Customer Details</h3>
+  <ul>
+    <li><strong>UserId:</strong> {{ customer.UserId }}</li>
+    <li><strong>UserAlias:</strong> {{ customer.UserAlias }}</li>
+    <li><strong>DisplayName:</strong> {{ customer.DisplayName }}</li>
+    <li><strong>Email:</strong> {{ customer.EmailAddress }}</li>
+    <li><strong>IsActive:</strong> {{ customer.IsActive ? 'Yes' : 'No' }}</li>
+    <li><strong>FirstName:</strong> {{ customer.FirstName }}</li>
+    <li><strong>LastName:</strong> {{ customer.LastName }}</li>
+    <li><strong>Zip:</strong> {{ customer.Zip }}</li>
+    <li><strong>PhoneNumber:</strong> {{ customer.PhoneNumber || 'N/A' }}</li>
+    <li><strong>City:</strong> {{ customer.City || 'N/A' }}</li>
+    <li><strong>State:</strong> {{ customer.State || 'N/A' }}</li>
+  </ul>
+</div>
+<div *ngIf="!customer" class="cust-detail-empty">
+  <p>Select a customer to view details.</p>
+</div>

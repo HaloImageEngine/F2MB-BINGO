@@ -1,0 +1,117 @@
+<div
+  class="app-shell"
+  [class.sidebar-open]="isSidebarOpen"
+  [class.sidebar-collapsed]="isSidebarCollapsed && showSidebarNav()"
+  [class.app-shell--login]="isLoginRoute()"
+  [class.app-shell--no-nav]="!isLoginRoute() && !showSidebarNav()">
+  <aside class="sidebar" [class.sidebar--open]="isSidebarOpen" *ngIf="showSidebarNav()">
+    <div
+      class="brand-card surface-card"
+      [class.brand-card--showing-image]="showBrandCardImage"
+      [class.brand-card--compact]="!showBrandCardTitles">
+      <p class="eyebrow">{{ controlRoomLabel }}</p>
+      @if (currentUser(); as user) {
+        <p class="brand-card__user-meta">
+          <span class="brand-card__user-field">
+            <span class="brand-card__user-label">UserAlias</span>
+            <span class="brand-card__user-value">{{ user.UserAlias }}</span>
+          </span>
+          <span class="brand-card__user-field">
+            <span class="brand-card__user-label">UserId</span>
+            <span class="brand-card__user-value">{{ user.UserId }}</span>
+          </span>
+        </p>
+        <button type="button" class="brand-card__logoff-btn" (click)="logoff()">Log off</button>
+      }
+      <ng-container *ngIf="showBrandCardImage; else brandCardContent">
+        <img class="brand-card__image" [src]="brandCardImagePath" alt="DJ GOGI" />
+      </ng-container>
+      <ng-template #brandCardContent>
+        @if (showBrandCardTitles) {
+          <h1>DJ GOGI Bingo</h1>
+          <p>Music Bingo Gameing Service.</p>
+        }
+      </ng-template>
+    </div>
+
+    <button type="button" class="sidebar__collapse-btn" (click)="toggleSidebarCollapse()" aria-label="Collapse navigation">
+      &#8249; Hide panel
+    </button>
+
+    <button type="button" class="sidebar__close" (click)="toggleSidebar()" aria-label="Close navigation">
+      Close
+    </button>
+
+    <div class="sidebar__nav-shell">
+      <nav class="sidebar__nav" #sidebarNav>
+        <ng-container *ngFor="let section of navSections">
+          <ng-container *ngIf="!section.hidden">
+          <p class="nav-section__label">{{ section.title }}</p>
+          <a
+            *ngFor="let item of section.items"
+            class="nav-link"
+            [routerLink]="item.path"
+            routerLinkActive="is-active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            (click)="onNavLinkClick($event)"
+          >
+            <span class="nav-link__icon" [attr.data-accent]="item.accent">{{ item.icon }}</span>
+            <span class="nav-link__body">
+              <span class="nav-link__title">{{ item.label }}</span>
+              <span class="nav-link__helper">{{ item.helper }}</span>
+            </span>
+            <span *ngIf="item.badge" class="nav-link__badge">{{ item.badge }}</span>
+          </a>
+          </ng-container>
+        </ng-container>
+      </nav>
+    </div>
+
+    @if (showBuildBanner) {
+      <div
+        class="sidebar__build surface-card"
+        [attr.title]="'Deployed build identifier. Production ends with .P; local dev ends with .T.'">
+        <span class="sidebar__build-label">App build</span>
+        <span class="sidebar__build-version">{{ appVersion }}</span>
+        <span
+          class="sidebar__build-kind"
+          [class.sidebar__build-kind--prod]="isProductionBuild"
+          [class.sidebar__build-kind--dev]="!isProductionBuild">
+          {{ buildKind }}
+        </span>
+      </div>
+    }
+
+    <a
+      class="sidebar__site-link"
+      href="http://djgogi.com"
+      target="_blank"
+      rel="noopener noreferrer">
+      djgogi.com
+    </a>
+
+    <!-- <div class="sidebar__footer surface-card">
+      <p class="eyebrow">Escalations</p>
+      <p class="footer__name">{{ liaison.name }}</p>
+      <p class="footer__availability">{{ liaison.availability }}</p>
+      <button type="button" class="footer__button">Message Liaison</button>
+    </div> -->
+  </aside>
+
+  <button
+    type="button"
+    class="sidebar-reveal-tab"
+    *ngIf="showSidebarNav() && isSidebarCollapsed"
+    (click)="toggleSidebarCollapse()"
+    aria-label="Expand navigation">
+    &#8250;
+  </button>
+
+  <section class="workspace" [class.workspace--login]="isLoginRoute()">
+    <button type="button" class="workspace__menu" *ngIf="showSidebarNav()" (click)="toggleSidebar()">Menu</button>
+
+    <div class="router-surface surface-card" [class.router-surface--login]="isLoginRoute()">
+      <router-outlet />
+    </div>
+  </section>
+</div>

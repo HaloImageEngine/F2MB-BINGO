@@ -1,0 +1,163 @@
+.detail-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ── Back button ─────────────────────────────────────────── */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 0.75rem;
+  background: var(--panel-elevated);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover {
+    color: var(--accent-iris);
+    border-color: rgba(124, 124, 255, 0.5);
+  }
+}
+
+/* ── Image stage ─────────────────────────────────────────── */
+.image-stage {
+  position: relative;
+  background: var(--panel-base);
+  border: 1px solid var(--border-soft);
+  border-radius: 1.25rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.image-stage__spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+}
+
+.spinner {
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 3px solid var(--border-strong);
+  border-top-color: var(--accent-iris);
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.image-stage__error {
+  padding: 3rem;
+  color: var(--danger);
+  font-size: 0.9rem;
+}
+
+.full-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 75vh;
+  object-fit: contain;
+  border-radius: 1.25rem;
+  transition: opacity 0.3s;
+
+  &--hidden {
+    opacity: 0;
+    position: absolute;
+  }
+}
+
+/* ── Metadata panel ──────────────────────────────────────── */
+.meta-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.meta-row {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--border-soft);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.meta-label {
+  flex: 0 0 120px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+}
+
+.meta-value {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+
+  &--accent {
+    color: var(--accent-iris);
+  }
+
+  &--muted {
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.meta-sub {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+/* ── Status tags ─────────────────────────────────────────── */
+.status-tag {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+
+  &--ok {
+    background: rgba(95, 224, 160, 0.15);
+    color: var(--success);
+    border-color: rgba(95, 224, 160, 0.3);
+  }
+
+  &--off {
+    background: rgba(255, 123, 123, 0.15);
+    color: var(--danger);
+    border-color: rgba(255, 123, 123, 0.3);
+  }
+
+  &--warn {
+    background: rgba(245, 199, 109, 0.15);
+    color: var(--accent-amber);
+    border-color: rgba(245, 199, 109, 0.3);
+  }
+}

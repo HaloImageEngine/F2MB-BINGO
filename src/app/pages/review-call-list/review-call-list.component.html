@@ -1,0 +1,355 @@
+<section class="create-call-list-page">
+  <header class="create-call-list-page__header">
+    <div>
+      <a routerLink="/console" class="create-call-list-page__back">&larr; Back to Console</a>
+      <h1>Review Call List</h1>
+      <p>Build a new call list from the full song library, then send the selected songs with the call list header in one flow.</p>
+      <div class="create-call-list-page__user-top">
+        <span><strong>UserAlias:</strong> {{ currentUser()?.UserAlias || '—' }}</span>
+        <span><strong>UserId:</strong> {{ currentUser()?.UserId ?? '—' }}</span>
+      </div>
+    </div>
+  </header>
+
+  <form class="create-call-list-layout" [formGroup]="form" (ngSubmit)="createCallList()">
+    <section id="CLPanel1" class="cl-panel cl-panel--wide cl-panel1">
+      <div class="previous-games-box previous-games-box--top">
+        <h3>Previous Games</h3>
+        <p class="previous-games-box__meta">Latest 10 games, sorted by Game ID (highest first) — scroll the grid for more.</p>
+
+        <div class="panel-state" *ngIf="!currentUser()?.UserId">Log in to load previous games.</div>
+        <div class="panel-state" *ngIf="currentUser()?.UserId && loadingLatestGames()">Loading previous games…</div>
+        <div class="panel-message panel-message--error" *ngIf="currentUser()?.UserId && !loadingLatestGames() && latestGamesError() as gamesErr">{{ gamesErr }}</div>
+
+        <div class="previous-games-box__table-wrap" *ngIf="currentUser()?.UserId && !loadingLatestGames() && !latestGamesError()">
+          <table class="previous-games-grid" *ngIf="latestGames().length > 0; else noPreviousGames">
+            <thead>
+              <tr>
+                <th>Game ID</th>
+                <th>#</th>
+                <th>Inn</th>
+                <th>Name</th>
+                <th>Status</th>
+                <th>CL ID</th>
+                <th>Call List</th>
+                <th>Genre</th>
+                <th>Decade</th>
+                <th>Created</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let game of latestGames(); trackBy: trackByLatestGame">
+                <td>{{ game.Game_ID }}</td>
+                <td>{{ game.Game_Number }}</td>
+                <td>{{ game.Game_Inning }}</td>
+                <td [title]="game.Game_Name">{{ game.Game_Name }}</td>
+                <td>{{ game.Game_Status }}</td>
+                <td>{{ game.Call_List_ID }}</td>
+                <td [title]="game.Call_List_Name ?? ''">{{ game.Call_List_Name || '—' }}</td>
+                <td>{{ game.Call_List_Genre || '—' }}</td>
+                <td>{{ game.Call_List_Decade || '—' }}</td>
+                <td>{{ formatGameDate(game.Game_CreatedAt) }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <ng-template #noPreviousGames>
+            <div class="panel-state">No previous games found.</div>
+          </ng-template>
+        </div>
+      </div>
+
+      <div id="CPanel1" class="cl-panel1__setup">
+        <div class="cl-panel__header cl-panel1__header">
+          <span class="cl-panel__eyebrow">CPanel1</span>
+          <h2>Game Setup</h2>
+          <button
+            type="button"
+            class="primary-button cl-panel1__insert-btn"
+            (click)="insertNewGame()"
+            [disabled]="insertingNewGame() || !canInsertNewGame()">
+            {{ insertingNewGame() ? 'Inserting…' : 'Insert New Game' }}
+          </button>
+        </div>
+
+      <div class="cl-panel1-grid">
+        <div class="cl-panel1-fields">
+          <fieldset class="game-setup-fields">
+            <label class="form-field">
+              <span>Game_ID</span>
+              <input type="number" formControlName="GameID" placeholder="1003" />
+              <small *ngIf="showFieldError('GameID')">{{ fieldError('GameID') }}</small>
+            </label>
+
+            <label class="form-field">
+              <span>Game_Number</span>
+              <input
+                type="text"
+                formControlName="GameNumber"
+                inputmode="numeric"
+                autocomplete="off"
+                placeholder="1" />
+              <small *ngIf="showFieldError('GameNumber')">{{ fieldError('GameNumber') }}</small>
+            </label>
+
+            <label class="form-field">
+              <span>Game_Inning</span>
+              <input
+                type="text"
+                formControlName="GameInning"
+                inputmode="numeric"
+                autocomplete="off"
+                placeholder="1" />
+              <small *ngIf="showFieldError('GameInning')">{{ fieldError('GameInning') }}</small>
+            </label>
+
+            <label class="form-field">
+              <span>Game_WinPattern</span>
+              <input
+                type="text"
+                formControlName="GameWinPattern"
+                autocomplete="off"
+                placeholder="TBD" />
+              <small *ngIf="showFieldError('GameWinPattern')">{{ fieldError('GameWinPattern') }}</small>
+            </label>
+
+            <label class="form-field">
+              <span>CallList_Master</span>
+              <select
+                [ngModel]="selectedCallListMasterId()"
+                (ngModelChange)="selectExistingCallListMaster($event)"
+                [ngModelOptions]="{ standalone: true }"
+                [compareWith]="compareById">
+                <option [ngValue]="null">Select CallList_Master_ID</option>
+                <option *ngFor="let item of callListMasters()" [ngValue]="item.Call_List_ID">
+                  {{ item.Call_List_ID }} - {{ item.Call_List_Name || 'Untitled list' }}
+                </option>
+              </select>
+              <small *ngIf="loadingCallListMasters()">Loading call list masters...</small>
+              <small *ngIf="!loadingCallListMasters() && callListMasterError() as callListMasterErrorMessage">{{ callListMasterErrorMessage }}</small>
+            </label>
+          </fieldset>
+        </div>
+
+        <div class="cl-panel1-aside">
+        <div class="info-box">
+          <h3>Info Box</h3>
+          <p>Insert New Game request JSON — built from the Game Setup fields and signed-in user.</p>
+
+          <dl class="info-box__payload" *ngIf="insertNewGamePayload() as payload">
+            <div><dt>User_ID</dt><dd>{{ payload.User_ID }}</dd></div>
+            <div><dt>Call_List_ID</dt><dd>{{ payload.Call_List_ID }}</dd></div>
+            <div><dt>Game_Number</dt><dd>{{ payload.Game_Number }}</dd></div>
+            <div><dt>Game_Inning</dt><dd>{{ payload.Game_Inning }}</dd></div>
+            <div><dt>Game_Name</dt><dd>{{ payload.Game_Name }}</dd></div>
+            <div><dt>Game_StartTime</dt><dd>{{ payload.Game_StartTime }}</dd></div>
+            <div><dt>Game_EndTime</dt><dd>{{ payload.Game_EndTime }}</dd></div>
+            <div><dt>Game_WinPattern</dt><dd>{{ payload.Game_WinPattern }}</dd></div>
+            <div><dt>Game_WinnerCard_ID</dt><dd>{{ payload.Game_WinnerCard_ID }}</dd></div>
+            <div><dt>Game_Status</dt><dd>{{ payload.Game_Status }}</dd></div>
+          </dl>
+          <p class="info-box__hint" *ngIf="!canInsertNewGame()">Complete Game Setup: valid Game_Number, Game_Inning, and a CallList_Master.</p>
+
+          <pre class="info-box__json" *ngIf="insertNewGamePayloadJson() as json">{{ json }}</pre>
+
+          <div class="panel-message panel-message--error" *ngIf="insertNewGameError() as insertGameErr">{{ insertGameErr }}</div>
+          <div class="panel-message panel-message--success" *ngIf="insertNewGameSuccess() as insertGameOk">{{ insertGameOk }}</div>
+
+          <div class="info-box__stats">
+            <div>
+              <strong>{{ maxGameId() ?? '—' }}</strong>
+              <span>Max Game ID</span>
+            </div>
+            <div>
+              <strong>{{ nextGameNumber() }}</strong>
+              <span>Next Game Number</span>
+            </div>
+            <div>
+              <strong>{{ insertNewGamePayload()?.Game_Inning ?? defaultGameInning() }}</strong>
+              <span>Game Inning</span>
+            </div>
+            <div>
+              <strong>{{ selectedCount() }}</strong>
+              <span>Selected Songs</span>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+      </div>
+    </section>
+
+    <section id="CLPanel2" class="cl-panel">
+      <div class="cl-panel__header">
+        <div>
+          <span class="cl-panel__eyebrow">CLPanel2</span>
+          <h2>Create New CallList</h2>
+        </div>
+      </div>
+
+      <div class="cl-master-list">
+        <div class="panel-state" *ngIf="loadingCallListMasters()">Loading call lists...</div>
+        <div class="panel-state panel-state--error" *ngIf="!loadingCallListMasters() && callListMasterError() as err">{{ err }}</div>
+        <button
+          type="button"
+          class="cl-master-row"
+          [class.cl-master-row--active]="selectedCallListMasterId() === item.Call_List_ID"
+          *ngFor="let item of callListMasters()"
+          (click)="selectExistingCallListMaster(item.Call_List_ID)">
+          <span class="cl-master-row__id">#{{ item.Call_List_ID }}</span>
+          <span class="cl-master-row__name">{{ item.Call_List_Name || 'Untitled list' }}</span>
+        </button>
+        <div class="panel-state" *ngIf="!loadingCallListMasters() && !callListMasterError() && callListMasters().length === 0">No call lists found.</div>
+      </div>
+
+      <div class="panel-message panel-message--error" *ngIf="formError() as formErrorMessage">{{ formErrorMessage }}</div>
+      <div class="panel-message panel-message--success" *ngIf="success() as successMessage">{{ successMessage }}</div>
+
+      <div class="panel-form-grid">
+        <label class="form-field">
+          <div class="form-field__label-row">
+            <span>Call List Name</span>
+            <span class="form-field__id" *ngIf="currentCallListId() as callListId">CallList_ID: {{ callListId }}</span>
+          </div>
+          <input type="text" formControlName="CallListName" maxlength="150" placeholder="Alternate Pop 90s Bingo" />
+          <small *ngIf="showFieldError('CallListName')">{{ fieldError('CallListName') }}</small>
+        </label>
+
+        <label class="form-field">
+          <span>Call List Date</span>
+          <input type="date" formControlName="CallListDate" />
+          <small *ngIf="showFieldError('CallListDate')">{{ fieldError('CallListDate') }}</small>
+        </label>
+
+        <label class="form-field form-field--full">
+          <span>Call List Description</span>
+          <textarea formControlName="CallListDescription" rows="4" maxlength="500" placeholder="A curated call list for music bingo."></textarea>
+          <small *ngIf="showFieldError('CallListDescription')">{{ fieldError('CallListDescription') }}</small>
+        </label>
+
+        <label class="form-field">
+          <span>Call List Genre</span>
+          <select formControlName="CallListGenre">
+            <option value="">Select genre</option>
+            <option *ngFor="let option of genreOptions()" [value]="option.Name ?? ''">{{ option.Name }}</option>
+          </select>
+          <small *ngIf="showFieldError('CallListGenre')">{{ fieldError('CallListGenre') }}</small>
+        </label>
+
+        <label class="form-field">
+          <span>Call List Decade</span>
+          <select formControlName="CallListDecade">
+            <option value="">Select decade</option>
+            <option *ngFor="let option of decadeOptions()" [value]="option.Name ?? ''">{{ option.Name }}</option>
+          </select>
+          <small *ngIf="showFieldError('CallListDecade')">{{ fieldError('CallListDecade') }}</small>
+        </label>
+
+        <label class="form-field">
+          <span>Call List Era</span>
+          <select formControlName="CallListEra">
+            <option value="">Select era</option>
+            <option *ngFor="let option of eraOptions()" [value]="option.Name ?? ''">{{ option.Name }}</option>
+          </select>
+          <small *ngIf="showFieldError('CallListEra')">{{ fieldError('CallListEra') }}</small>
+        </label>
+
+        <label class="form-field form-field--inline">
+          <span>Call List Is Active</span>
+          <input type="checkbox" formControlName="CallListIsActive" />
+        </label>
+
+        <label class="form-field">
+          <span>Song Count</span>
+          <input type="number" [value]="selectedCount()" readonly />
+        </label>
+      </div>
+
+      <div class="panel-actions">
+        <button type="submit" class="primary-button" [disabled]="saving() || loadingLookups()">
+          {{ saving() ? 'Creating...' : 'Insert_CallList_Master' }}
+        </button>
+      </div>
+    </section>
+
+    <section id="CLPanel3" class="cl-panel">
+      <div class="cl-panel__header">
+        <div>
+          <span class="cl-panel__eyebrow">CLPanel3</span>
+          <h2>Available Songs</h2>
+        </div>
+      </div>
+
+      <div class="panel-calllist-id">
+        <span>CallList_ID</span>
+        <strong>{{ currentCallListId() ?? '--' }}</strong>
+      </div>
+
+      <label class="search-field">
+        <span>Search Artist or Song</span>
+        <input
+          type="text"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="searchTerm.set($event)"
+          [ngModelOptions]="{ standalone: true }"
+          placeholder="Search title or artist" />
+      </label>
+
+      <div class="panel-state" *ngIf="loadingSongs()">Loading songs...</div>
+      <div class="panel-state panel-state--error" *ngIf="!loadingSongs() && error() as errorMessage">{{ errorMessage }}</div>
+
+      <div class="song-list" *ngIf="!loadingSongs() && !error()">
+        <div class="song-row" *ngFor="let song of filteredSongs(); trackBy: trackBySong">
+          <div class="song-row__meta">
+            <strong>{{ song.Title || 'Untitled song' }}</strong>
+            <small>{{ song.Artist || 'Unknown artist' }} • {{ formatDuration(song.DurationSeconds) }}</small>
+          </div>
+          <button type="button" class="row-action" (click)="addSong(song)">Add</button>
+        </div>
+
+        <div class="panel-state" *ngIf="filteredSongs().length === 0">No songs match the current search.</div>
+      </div>
+
+      <div class="panel-debug" *ngIf="latestInsertSongRequestJson() as latestInsertSongRequestJson">
+        <span>Latest Insert_CallList_Song JSON</span>
+        <pre>{{ latestInsertSongRequestJson }}</pre>
+      </div>
+
+      <div class="panel-debug panel-debug--success" *ngIf="latestInsertSongResultJson() as latestInsertSongResultJson">
+        <span>Latest Insert_CallList_Song Result</span>
+        <pre>{{ latestInsertSongResultJson }}</pre>
+      </div>
+
+      <div class="panel-debug panel-debug--error" *ngIf="latestInsertSongErrorJson() as latestInsertSongErrorJson">
+        <span>Latest Insert_CallList_Song Error</span>
+        <pre>{{ latestInsertSongErrorJson }}</pre>
+      </div>
+    </section>
+
+    <section id="CLPanel4" class="cl-panel">
+      <div class="cl-panel__header">
+        <div>
+          <span class="cl-panel__eyebrow">CLPanel4</span>
+          <h2>Selected Songs</h2>
+        </div>
+        <button type="button" class="secondary-button" (click)="clearSelection()" [disabled]="selectedCount() === 0">Clear</button>
+      </div>
+
+      <div class="panel-calllist-id" *ngIf="currentCallListId() as callListId">
+        <span>CallList_ID</span>
+        <strong>{{ callListId }}</strong>
+      </div>
+
+      <div class="song-list song-list--selected">
+        <div class="song-row song-row--selected" *ngFor="let song of selectedSongs(); trackBy: trackBySong">
+          <div class="song-row__meta">
+            <strong>{{ song.Title || 'Untitled song' }}</strong>
+            <small>{{ song.Artist || 'Unknown artist' }} • {{ song.Genre || 'Unknown genre' }}</small>
+          </div>
+          <button type="button" class="row-action row-action--remove" (click)="removeSong(song)">Remove</button>
+        </div>
+
+        <div class="panel-state" *ngIf="selectedCount() === 0">Songs added from CLPanel3 will appear here.</div>
+      </div>
+    </section>
+  </form>
+</section>

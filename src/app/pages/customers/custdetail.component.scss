@@ -1,0 +1,19 @@
+.cust-detail {
+  background: #fff;
+  color: #222;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  margin-top: 1rem;
+  ul {
+    list-style: none;
+    padding: 0;
+    li {
+      margin-bottom: 0.5rem;
+    }
+  }
+}
+.cust-detail-empty {
+  color: #888;
+  margin-top: 1rem;
+}

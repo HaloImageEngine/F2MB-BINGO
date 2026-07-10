@@ -1,0 +1,72 @@
+<section class="qr-generator-page">
+  <header class="qr-generator-page__header surface-card">
+    <p class="qr-generator-page__eyebrow">Tools</p>
+    <h1>QR Code Generator</h1>
+    <p class="qr-generator-page__copy">
+      Enter any text or URL, generate a scannable QR code, then download it as PNG or JPG.
+    </p>
+  </header>
+
+  <section class="qr-generator-page__form surface-card">
+    <label class="qr-generator-page__field" for="qr-generator-text">
+      <span>Text to encode</span>
+      <input
+        id="qr-generator-text"
+        type="text"
+        class="qr-generator-page__input"
+        [value]="inputText()"
+        (input)="updateInputText($event)"
+        placeholder="https://example.com or any message"
+        autocomplete="off"
+      />
+    </label>
+
+    <label class="qr-generator-page__field" for="qr-generator-format">
+      <span>Image format</span>
+      <select
+        id="qr-generator-format"
+        class="qr-generator-page__select"
+        [value]="imageFormat()"
+        (change)="updateImageFormat($event)"
+      >
+        <option value="png">PNG</option>
+        <option value="jpg">JPG</option>
+      </select>
+    </label>
+
+    <button
+      type="button"
+      class="qr-generator-page__button"
+      (click)="generateQrCode()"
+      [disabled]="generating()"
+    >
+      {{ generating() ? 'Generating…' : 'Generate QR Code' }}
+    </button>
+
+    <p class="qr-generator-page__error" *ngIf="errorMessage() as error">{{ error }}</p>
+  </section>
+
+  <section class="qr-generator-page__preview surface-card" aria-live="polite">
+    <h2>QR Code Preview</h2>
+
+    <p class="qr-generator-page__placeholder" *ngIf="!generatedImage() && !generating()">
+      Your QR code will appear here after you generate it.
+    </p>
+
+    <p class="qr-generator-page__placeholder" *ngIf="generating()">Generating QR code…</p>
+
+    <div class="qr-generator-page__result" *ngIf="generatedImage() as image">
+      <img
+        class="qr-generator-page__image"
+        [src]="image.objectUrl"
+        [alt]="'QR code for ' + inputText()"
+      />
+      <p class="qr-generator-page__meta">
+        Format: {{ image.format | uppercase }} · File: {{ image.suggestedFileName }}
+      </p>
+      <button type="button" class="qr-generator-page__button qr-generator-page__button--secondary" (click)="downloadQrCode()">
+        Download Image
+      </button>
+    </div>
+  </section>
+</section>

@@ -1,0 +1,408 @@
+<section class="guideline-page">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Fira+Code:wght@400;500&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+	<div class="page-header">
+		<h1>Music Bingo</h1>
+		<p>Database Design — Full Chat Transcript</p>
+		<div class="header-meta">
+			<span>SQL Server 2017</span>
+			<span>4 Tables</span>
+			<span>GameNight → Game → Cards ← Songs</span>
+			<span>April 21, 2026</span>
+		</div>
+	</div>
+
+	<div class="chat-wrap">
+		<div class="msg user">
+			<div class="avatar user-av">YOU</div>
+			<div class="bubble">
+				<div class="sender-label">You</div>
+				Create a music bingo card table called "Cards" and have 1) Card_ID 2) Card_Date_Create 3) Game_ID 4) PlayCount 5) and whatever else you think we need. Make sure we have 25 fields for square numbers. This will be filled with a numeric number which will tie back the Songs table. Each song has a Song_ID which is numeric. There will be a "GameNight" table with a GN_ID that ties back to the "Game" table Game_ID. Each Game represents a Game Night where 5 bingo games happen. The 5 bingo games will be Games and have a Game_Id.
+			</div>
+		</div>
+
+		<div class="msg sonicpsyop-ai">
+			<div class="avatar sonicpsyop-ai-av">AI</div>
+			<div class="bubble">
+				<div class="sender-label">SonicPsyop AI</div>
+
+				<p>Here's a well-structured schema design for your Music Bingo system with 4 tables. The hierarchy is:</p>
+				<p><strong>GameNight → Game → Cards ← Songs</strong></p>
+
+				<h2>GameNight Table</h2>
+				<table>
+					<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+					<tr><td><span class="badge pk">PK</span>GN_ID</td><td>INT IDENTITY</td><td>Auto-increment primary key</td></tr>
+					<tr><td>GN_Name</td><td>VARCHAR(100)</td><td>e.g. "Taylor Night Vol.3"</td></tr>
+					<tr><td>GN_Date</td><td>DATE</td><td>Night the event is held</td></tr>
+					<tr><td>GN_Venue</td><td>VARCHAR(150)</td><td>Location / venue name</td></tr>
+					<tr><td>GN_HostName</td><td>VARCHAR(100)</td><td>Name of the host / DJ</td></tr>
+					<tr><td>GN_MaxPlayers</td><td>INT</td><td>Ticket cap for the night</td></tr>
+					<tr><td>GN_Notes</td><td>NVARCHAR(MAX)</td><td>Misc notes / theme details</td></tr>
+					<tr><td>GN_IsActive</td><td>BIT</td><td>1 = active / upcoming</td></tr>
+					<tr><td>GN_CreatedAt</td><td>DATETIME2</td><td>Record creation timestamp</td></tr>
+				</table>
+
+				<h2>Game Table</h2>
+				<p>5 games per GameNight (enforced with a UNIQUE + CHECK constraint).</p>
+				<table>
+					<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+					<tr><td><span class="badge pk">PK</span>Game_ID</td><td>INT IDENTITY</td><td>Auto-increment primary key</td></tr>
+					<tr><td><span class="badge fk">FK</span>GN_ID</td><td>INT</td><td>→ GameNight.GN_ID</td></tr>
+					<tr><td>Game_Number</td><td>TINYINT</td><td>1–5 within the night</td></tr>
+					<tr><td>Game_Name</td><td>VARCHAR(100)</td><td>e.g. "Game 1 – 80s Hits"</td></tr>
+					<tr><td>Game_StartTime</td><td>DATETIME2</td><td>When game started</td></tr>
+					<tr><td>Game_EndTime</td><td>DATETIME2</td><td>When game ended</td></tr>
+					<tr><td>Game_WinPattern</td><td>VARCHAR(50)</td><td>Line / Blackout / X / etc.</td></tr>
+					<tr><td>Game_WinnerCard_ID</td><td>INT</td><td>→ Cards.Card_ID (nullable)</td></tr>
+					<tr><td>Game_Status</td><td>VARCHAR(20)</td><td>Pending / Active / Complete</td></tr>
+					<tr><td>Game_CreatedAt</td><td>DATETIME2</td><td>Record creation timestamp</td></tr>
+				</table>
+
+				<h2>Songs Table</h2>
+				<table>
+					<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+					<tr><td><span class="badge pk">PK</span>Song_ID</td><td>INT IDENTITY</td><td>Auto-increment primary key</td></tr>
+					<tr><td>Song_Title</td><td>VARCHAR(200)</td><td>Song title</td></tr>
+					<tr><td>Song_Artist</td><td>VARCHAR(150)</td><td>Artist / band name</td></tr>
+					<tr><td>Song_Year</td><td>SMALLINT</td><td>Release year</td></tr>
+					<tr><td>Song_Genre</td><td>VARCHAR(80)</td><td>Pop / Rock / Country / etc.</td></tr>
+					<tr><td>Song_Album</td><td>VARCHAR(200)</td><td>Album name (optional)</td></tr>
+					<tr><td>Song_Duration_Sec</td><td>SMALLINT</td><td>Length in seconds</td></tr>
+					<tr><td>Song_IsActive</td><td>BIT</td><td>1 = available for play</td></tr>
+					<tr><td>Song_CreatedAt</td><td>DATETIME2</td><td>Added to library timestamp</td></tr>
+				</table>
+
+				<h2>Cards Table — 25 Squares</h2>
+				<p>One card per player per game. Squares named <code>Sq_B1</code> through <code>Sq_O5</code> (BINGO columns, rows 1–5). <code>Sq_N3</code> = center FREE SPACE, always NULL.</p>
+				<table>
+					<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+					<tr><td><span class="badge pk">PK</span>Card_ID</td><td>INT IDENTITY</td><td>Auto-increment primary key</td></tr>
+					<tr><td><span class="badge fk">FK</span>Game_ID</td><td>INT</td><td>→ Game.Game_ID</td></tr>
+					<tr><td>Card_Date_Create</td><td>DATETIME2</td><td>Timestamp card was generated</td></tr>
+					<tr><td>Card_PlayerName</td><td>VARCHAR(100)</td><td>Name of the player holding the card</td></tr>
+					<tr><td>Card_PlayerEmail</td><td>VARCHAR(150)</td><td>Player email (for digital delivery)</td></tr>
+					<tr><td>PlayCount</td><td>INT</td><td>Times this card has been used across replays</td></tr>
+					<tr><td>Card_IsWinner</td><td>BIT</td><td>1 = this card was the winning card</td></tr>
+					<tr><td>Card_SeedKey</td><td>VARCHAR(64)</td><td>Random seed used to generate card layout</td></tr>
+					<tr><td>Card_PrintedAt</td><td>DATETIME2</td><td>When card was printed / sent (nullable)</td></tr>
+					<tr><td><span class="badge fk">FK</span>Sq_B1 … Sq_O5</td><td>INT (×25)</td><td>Each stores a Song_ID. Sq_N3 = FREE (NULL)</td></tr>
+				</table>
+
+				<h3>Table Relationships</h3>
+				<ul>
+					<li><strong>GameNight.GN_ID → Game.GN_ID</strong> — One GameNight has exactly 5 Games</li>
+					<li><strong>Game.Game_ID → Cards.Game_ID</strong> — One Game has many Cards (one per player)</li>
+					<li><strong>Songs.Song_ID → Cards.Sq_B1 … Sq_O5</strong> — Each of the 24 active squares holds a Song_ID</li>
+					<li><strong>Game.Game_WinnerCard_ID → Cards.Card_ID</strong> — Optional back-reference to winning card</li>
+				</ul>
+			</div>
+		</div>
+
+		<div class="chat-divider"><span>SQL Server Compatibility Fix</span></div>
+
+		<div class="msg user">
+			<div class="avatar user-av">YOU</div>
+			<div class="bubble">
+				<div class="sender-label">You</div>
+				I am in SQL Server v17, it does not recognize 'auto_increment'. Redo the script in V17.
+			</div>
+		</div>
+
+		<div class="msg sonicpsyop-ai">
+			<div class="avatar sonicpsyop-ai-av">AI</div>
+			<div class="bubble">
+				<div class="sender-label">SonicPsyop AI</div>
+
+				<p>Here's the SQL Server 2017-compatible script. Key syntax changes:</p>
+
+				<table>
+					<tr><th>MySQL</th><th>SQL Server 2017</th></tr>
+					<tr><td><code>AUTO_INCREMENT</code></td><td><code>IDENTITY(1,1)</code></td></tr>
+					<tr><td><code>TINYINT(1)</code></td><td><code>BIT</code></td></tr>
+					<tr><td><code>DATETIME</code></td><td><code>DATETIME2</code> (more precise)</td></tr>
+					<tr><td><code>DEFAULT CURRENT_TIMESTAMP</code></td><td><code>DEFAULT SYSDATETIME()</code></td></tr>
+					<tr><td><code>TEXT</code></td><td><code>NVARCHAR(MAX)</code></td></tr>
+				</table>
+
+				<div class="code-wrap">
+					<div class="code-label">SQL — GameNight Table</div>
+					<pre><span class="cm">-- GameNight: top-level event container</span>
+<span class="kw">CREATE TABLE</span> <span class="tn">GameNight</span> (
+    <span class="cl">GN_ID</span>         <span class="tp">INT</span>           <span class="kw">NOT NULL IDENTITY(1,1)</span>
+                                  <span class="kw">CONSTRAINT</span> PK_GameNight <span class="kw">PRIMARY KEY</span>,
+    <span class="cl">GN_Name</span>       <span class="tp">VARCHAR(100)</span>  <span class="kw">NOT NULL</span>,
+    <span class="cl">GN_Date</span>       <span class="tp">DATE</span>          <span class="kw">NOT NULL</span>,
+    <span class="cl">GN_Venue</span>      <span class="tp">VARCHAR(150)</span>  <span class="kw">NULL</span>,
+    <span class="cl">GN_HostName</span>   <span class="tp">VARCHAR(100)</span>  <span class="kw">NULL</span>,
+    <span class="cl">GN_MaxPlayers</span> <span class="tp">INT</span>           <span class="kw">NULL</span>,
+    <span class="cl">GN_Notes</span>      <span class="tp">NVARCHAR(MAX)</span> <span class="kw">NULL</span>,
+    <span class="cl">GN_IsActive</span>   <span class="tp">BIT</span>           <span class="kw">NOT NULL CONSTRAINT</span> DF_GameNight_IsActive
+                                  <span class="kw">DEFAULT</span> 1,
+    <span class="cl">GN_CreatedAt</span>  <span class="tp">DATETIME2</span>     <span class="kw">NOT NULL CONSTRAINT</span> DF_GameNight_CreatedAt
+                                  <span class="kw">DEFAULT</span> SYSDATETIME()
+);
+<span class="kw">GO</span></pre>
+				</div>
+
+				<div class="code-wrap">
+					<div class="code-label">SQL — Songs Table</div>
+					<pre><span class="kw">CREATE TABLE</span> <span class="tn">Songs</span> (
+    <span class="cl">Song_ID</span>           <span class="tp">INT</span>           <span class="kw">NOT NULL IDENTITY(1,1)</span>
+                                      <span class="kw">CONSTRAINT</span> PK_Songs <span class="kw">PRIMARY KEY</span>,
+    <span class="cl">Song_Title</span>        <span class="tp">VARCHAR(200)</span>  <span class="kw">NOT NULL</span>,
+    <span class="cl">Song_Artist</span>       <span class="tp">VARCHAR(150)</span>  <span class="kw">NOT NULL</span>,
+    <span class="cl">Song_Year</span>         <span class="tp">SMALLINT</span>      <span class="kw">NULL</span>,
+    <span class="cl">Song_Genre</span>        <span class="tp">VARCHAR(80)</span>   <span class="kw">NULL</span>,
+    <span class="cl">Song_Album</span>        <span class="tp">VARCHAR(200)</span>  <span class="kw">NULL</span>,
+    <span class="cl">Song_Duration_Sec</span> <span class="tp">SMALLINT</span>      <span class="kw">NULL</span>,
+    <span class="cl">Song_IsActive</span>     <span class="tp">BIT</span>           <span class="kw">NOT NULL CONSTRAINT</span> DF_Songs_IsActive
+                                      <span class="kw">DEFAULT</span> 1,
+    <span class="cl">Song_CreatedAt</span>    <span class="tp">DATETIME2</span>     <span class="kw">NOT NULL CONSTRAINT</span> DF_Songs_CreatedAt
+                                      <span class="kw">DEFAULT</span> SYSDATETIME()
+);
+<span class="kw">GO</span></pre>
+				</div>
+
+				<div class="code-wrap">
+					<div class="code-label">SQL — Game Table</div>
+					<pre><span class="kw">CREATE TABLE</span> <span class="tn">Game</span> (
+    <span class="cl">Game_ID</span>            <span class="tp">INT</span>          <span class="kw">NOT NULL IDENTITY(1,1)</span>
+                                     <span class="kw">CONSTRAINT</span> PK_Game <span class="kw">PRIMARY KEY</span>,
+    <span class="cl">GN_ID</span>              <span class="tp">INT</span>          <span class="kw">NOT NULL</span>,
+    <span class="cl">Game_Number</span>        <span class="tp">TINYINT</span>      <span class="kw">NOT NULL</span>,   <span class="cm">-- 1 through 5</span>
+    <span class="cl">Game_Name</span>          <span class="tp">VARCHAR(100)</span> <span class="kw">NULL</span>,
+    <span class="cl">Game_StartTime</span>     <span class="tp">DATETIME2</span>    <span class="kw">NULL</span>,
+    <span class="cl">Game_EndTime</span>       <span class="tp">DATETIME2</span>    <span class="kw">NULL</span>,
+    <span class="cl">Game_WinPattern</span>    <span class="tp">VARCHAR(50)</span>  <span class="kw">NULL</span>,
+    <span class="cl">Game_WinnerCard_ID</span> <span class="tp">INT</span>          <span class="kw">NULL</span>,
+    <span class="cl">Game_Status</span>        <span class="tp">VARCHAR(20)</span>  <span class="kw">NOT NULL CONSTRAINT</span> DF_Game_Status
+                                     <span class="kw">DEFAULT</span> <span class="st">'Pending'</span>,
+    <span class="cl">Game_CreatedAt</span>     <span class="tp">DATETIME2</span>    <span class="kw">NOT NULL CONSTRAINT</span> DF_Game_CreatedAt
+                                     <span class="kw">DEFAULT</span> SYSDATETIME(),
+    <span class="kw">CONSTRAINT</span> FK_Game_GameNight <span class="kw">FOREIGN KEY</span> (<span class="cl">GN_ID</span>)
+        <span class="kw">REFERENCES</span> <span class="tn">GameNight</span> (<span class="cl">GN_ID</span>),
+    <span class="kw">CONSTRAINT</span> UQ_Game_Number   <span class="kw">UNIQUE</span> (<span class="cl">GN_ID</span>, <span class="cl">Game_Number</span>),
+    <span class="kw">CONSTRAINT</span> CHK_Game_Number  <span class="kw">CHECK</span>  (<span class="cl">Game_Number</span> <span class="kw">BETWEEN</span> 1 <span class="kw">AND</span> 5),
+    <span class="kw">CONSTRAINT</span> CHK_Game_Status  <span class="kw">CHECK</span>  (<span class="cl">Game_Status</span> <span class="kw">IN</span>
+        (<span class="st">'Pending'</span>, <span class="st">'Active'</span>, <span class="st">'Complete'</span>))
+);
+<span class="kw">GO</span></pre>
+				</div>
+
+				<div class="code-wrap">
+					<div class="code-label">SQL — Cards Table (25 squares)</div>
+					<pre><span class="kw">CREATE TABLE</span> <span class="tn">Cards</span> (
+    <span class="cm">-- Core card fields</span>
+    <span class="cl">Card_ID</span>          <span class="tp">INT</span>           <span class="kw">NOT NULL IDENTITY(1,1)</span>
+                                    <span class="kw">CONSTRAINT</span> PK_Cards <span class="kw">PRIMARY KEY</span>,
+    <span class="cl">Game_ID</span>          <span class="tp">INT</span>           <span class="kw">NOT NULL</span>,
+    <span class="cl">Card_Date_Create</span> <span class="tp">DATETIME2</span>     <span class="kw">NOT NULL CONSTRAINT</span> DF_Cards_DateCreate
+                                    <span class="kw">DEFAULT</span> SYSDATETIME(),
+    <span class="cl">Card_PlayerName</span>  <span class="tp">VARCHAR(100)</span>  <span class="kw">NULL</span>,
+    <span class="cl">Card_PlayerEmail</span> <span class="tp">VARCHAR(150)</span>  <span class="kw">NULL</span>,
+    <span class="cl">PlayCount</span>        <span class="tp">INT</span>           <span class="kw">NOT NULL CONSTRAINT</span> DF_Cards_PlayCount
+                                    <span class="kw">DEFAULT</span> 0,
+    <span class="cl">Card_IsWinner</span>    <span class="tp">BIT</span>           <span class="kw">NOT NULL CONSTRAINT</span> DF_Cards_IsWinner
+                                    <span class="kw">DEFAULT</span> 0,
+    <span class="cl">Card_SeedKey</span>     <span class="tp">VARCHAR(64)</span>   <span class="kw">NULL</span>,
+    <span class="cl">Card_PrintedAt</span>   <span class="tp">DATETIME2</span>     <span class="kw">NULL</span>,
+
+    <span class="cm">-- B Column</span>
+    <span class="cl">Sq_B1</span> <span class="tp">INT</span> <span class="kw">NULL</span>, <span class="cl">Sq_B2</span> <span class="tp">INT</span> <span class="kw">NULL</span>, <span class="cl">Sq_B3</span> <span class="tp">INT</span> <span class="kw">NULL</span>,
+    <span class="cl">Sq_B4</span> <span class="tp">INT</span> <span class="kw">NULL</span>, <span class="cl">Sq_B5</span> <span class="tp">INT</span> <span class="kw">NULL</span>,
+    <span class="cm">-- I Column</span>
+    <span class="cl">Sq_I1</span> <span class="tp">INT</span> <span class="kw">NULL</span>, <span class="cl">Sq_I2</span> <span class="tp">INT</span> <span class="kw">NULL</span>, <span class="cl">Sq_I3</span> <span class="tp">INT</span> <span class="kw">NULL</span>,
+    <span class="cl">Sq_I4</span> <span class="tp">INT</span> <span class="kw">NULL</span>, <span class="cl">Sq_I5</span> <span class="tp">INT</span> <span class="kw">NULL</span>,
+    <span class="cm">-- N Column (Sq_N3 = FREE SPACE, always NULL)</span>
+    <span class="cl">Sq_N1</span> <span class="tp">INT</span> <span class="kw">NULL</span>, <span class="cl">Sq_N2</span> <span class="tp">INT</span> <span class="kw">NULL</span>, <span class="cl">Sq_N3</span> <span class="tp">INT</span> <span class="kw">NULL</span>,
+    <span class="cl">Sq_N4</span> <span class="tp">INT</span> <span class="kw">NULL</span>, <span class="cl">Sq_N5</span> <span class="tp">INT</span> <span class="kw">NULL</span>,
+    <span class="cm">-- G Column</span>
+    <span class="cl">Sq_G1</span> <span class="tp">INT</span> <span class="kw">NULL</span>, <span class="cl">Sq_G2</span> <span class="tp">INT</span> <span class="kw">NULL</span>, <span class="cl">Sq_G3</span> <span class="tp">INT</span> <span class="kw">NULL</span>,
+    <span class="cl">Sq_G4</span> <span class="tp">INT</span> <span class="kw">NULL</span>, <span class="cl">Sq_G5</span> <span class="tp">INT</span> <span class="kw">NULL</span>,
+    <span class="cm">-- O Column</span>
+    <span class="cl">Sq_O1</span> <span class="tp">INT</span> <span class="kw">NULL</span>, <span class="cl">Sq_O2</span> <span class="tp">INT</span> <span class="kw">NULL</span>, <span class="cl">Sq_O3</span> <span class="tp">INT</span> <span class="kw">NULL</span>,
+    <span class="cl">Sq_O4</span> <span class="tp">INT</span> <span class="kw">NULL</span>, <span class="cl">Sq_O5</span> <span class="tp">INT</span> <span class="kw">NULL</span>,
+
+    <span class="kw">CONSTRAINT</span> FK_Cards_Game       <span class="kw">FOREIGN KEY</span> (<span class="cl">Game_ID</span>)
+        <span class="kw">REFERENCES</span> <span class="tn">Game</span> (<span class="cl">Game_ID</span>),
+    <span class="kw">CONSTRAINT</span> FK_Cards_Sq_B1      <span class="kw">FOREIGN KEY</span> (<span class="cl">Sq_B1</span>)
+        <span class="kw">REFERENCES</span> <span class="tn">Songs</span> (<span class="cl">Song_ID</span>),
+    <span class="cm">-- ... repeat for all 24 active squares ...</span>
+    <span class="kw">CONSTRAINT</span> FK_Cards_Sq_O5      <span class="kw">FOREIGN KEY</span> (<span class="cl">Sq_O5</span>)
+        <span class="kw">REFERENCES</span> <span class="tn">Songs</span> (<span class="cl">Song_ID</span>),
+    <span class="kw">CONSTRAINT</span> CHK_Cards_FreeSpace <span class="kw">CHECK</span> (<span class="cl">Sq_N3</span> <span class="kw">IS NULL</span>)
+);
+<span class="kw">GO</span>
+
+<span class="cm">-- Add circular FK after Cards table exists</span>
+<span class="kw">ALTER TABLE</span> <span class="tn">Game</span>
+    <span class="kw">ADD CONSTRAINT</span> FK_Game_WinnerCard
+    <span class="kw">FOREIGN KEY</span> (<span class="cl">Game_WinnerCard_ID</span>) <span class="kw">REFERENCES</span> <span class="tn">Cards</span> (<span class="cl">Card_ID</span>);
+<span class="kw">GO</span></pre>
+				</div>
+
+				<div class="note-box">
+					<strong>Note:</strong> <code>Game_WinnerCard_ID</code>'s FK is added last via <code>ALTER TABLE</code> because Game is created before Cards exists — the circular reference must be wired up after both tables are in place.
+				</div>
+			</div>
+		</div>
+
+		<div class="chat-divider"><span>Stored Procedure — Card Generator</span></div>
+
+		<div class="msg user">
+			<div class="avatar user-av">YOU</div>
+			<div class="bubble">
+				<div class="sender-label">You</div>
+				How can I create Bingo Cards? I want to give it a GN_ID, Number of Songs in the game, and have it generate 200 different bingo cards with the possible winner within a 15 song playlist.
+			</div>
+		</div>
+
+		<div class="msg sonicpsyop-ai">
+			<div class="avatar sonicpsyop-ai-av">AI</div>
+			<div class="bubble">
+				<div class="sender-label">SonicPsyop AI</div>
+
+				<p>The approach is a stored procedure that:</p>
+				<ol>
+					<li>Takes <code>&#64;Game_ID</code>, <code>&#64;CardCount</code> (200), and <code>&#64;PlaylistSize</code> (15)</li>
+					<li>Randomly selects 24 unique songs per card from the pool, laid into the 25 squares (center = FREE)</li>
+					<li>Guarantees at least one card will have a winning line within the 15-song call sequence</li>
+				</ol>
+
+				<div class="code-wrap">
+					<div class="code-label">SQL — usp_GenerateBingoCards</div>
+					<pre><span class="kw">CREATE OR ALTER PROCEDURE</span> usp_GenerateBingoCards
+	<span class="cl">&#64;Game_ID</span>      <span class="tp">INT</span>,
+	<span class="cl">&#64;CardCount</span>    <span class="tp">INT</span>  = 200,
+	<span class="cl">&#64;PlaylistSize</span> <span class="tp">INT</span>  = 15
+<span class="kw">AS</span>
+<span class="kw">BEGIN</span>
+    <span class="kw">SET NOCOUNT ON</span>;
+
+    <span class="cm">-- Validation</span>
+	<span class="kw">IF NOT EXISTS</span> (<span class="kw">SELECT</span> 1 <span class="kw">FROM</span> <span class="tn">Game</span> <span class="kw">WHERE</span> <span class="cl">Game_ID</span> = <span class="cl">&#64;Game_ID</span>)
+    <span class="kw">BEGIN</span>
+		<span class="kw">RAISERROR</span>(<span class="st">'Game_ID %d does not exist.'</span>, 16, 1, <span class="cl">&#64;Game_ID</span>);
+        <span class="kw">RETURN</span>;
+    <span class="kw">END</span>
+
+    <span class="cm">-- Build shuffled song pool</span>
+    <span class="kw">DROP TABLE IF EXISTS</span> #SongPool;
+    <span class="kw">SELECT</span>
+        <span class="cl">Song_ID</span>,
+        <span class="kw">ROW_NUMBER() OVER</span> (<span class="kw">ORDER BY NEWID()</span>) <span class="kw">AS</span> RandRank
+    <span class="kw">INTO</span> #SongPool
+    <span class="kw">FROM</span> <span class="tn">Songs</span>
+    <span class="kw">WHERE</span> <span class="cl">Song_IsActive</span> = 1;
+
+	<span class="cm">-- Identify "hot" songs called within first &#64;PlaylistSize</span>
+    <span class="kw">DROP TABLE IF EXISTS</span> #HotSongs;
+    <span class="kw">SELECT</span> <span class="cl">Song_ID</span>
+    <span class="kw">INTO</span>   #HotSongs
+    <span class="kw">FROM</span>   #SongPool
+	<span class="kw">WHERE</span>  RandRank &lt;= <span class="cl">&#64;PlaylistSize</span>;
+
+	<span class="cm">-- Generate &#64;CardCount cards via WHILE loop</span>
+	<span class="kw">DECLARE</span> <span class="cl">&#64;i</span> <span class="tp">INT</span> = 1;
+	<span class="kw">WHILE</span> <span class="cl">&#64;i</span> &lt;= <span class="cl">&#64;CardCount</span>
+    <span class="kw">BEGIN</span>
+        <span class="cm">-- Reshuffle pool for every card using NEWID()</span>
+        <span class="kw">DROP TABLE IF EXISTS</span> #Shuffled;
+        <span class="kw">SELECT</span> <span class="cl">Song_ID</span>,
+               <span class="kw">ROW_NUMBER() OVER</span> (<span class="kw">ORDER BY NEWID()</span>) <span class="kw">AS</span> Pos
+        <span class="kw">INTO</span> #Shuffled <span class="kw">FROM</span> #SongPool;
+
+        <span class="cm">-- Pick 24 songs and map slots to square names</span>
+		<span class="kw">INSERT INTO</span> #NewCards (CardSeq, Sq_B1, <span class="cm">/* ... */</span> Sq_O5)
+		<span class="kw">SELECT</span> <span class="cl">&#64;i</span>,
+            <span class="kw">MAX</span>(<span class="kw">CASE WHEN</span> Slot = 1  <span class="kw">THEN</span> Song_ID <span class="kw">END</span>), <span class="cm">-- B1</span>
+            <span class="cm">/* ... slots 2-24 map to B2..O5, skipping N3 ... */</span>
+            <span class="kw">MAX</span>(<span class="kw">CASE WHEN</span> Slot = 24 <span class="kw">THEN</span> Song_ID <span class="kw">END</span>)  <span class="cm">-- O5</span>
+        <span class="kw">FROM</span> #CardSongs;
+
+		<span class="kw">SET</span> <span class="cl">&#64;i</span> += 1;
+    <span class="kw">END</span>
+
+    <span class="cm">-- Overwrite Card #1 top row with 5 hot songs (guaranteed winner)</span>
+    <span class="kw">UPDATE</span> #NewCards
+    <span class="kw">SET</span>
+		<span class="cl">Sq_B1</span> = <span class="cl">&#64;Hot1</span>, <span class="cl">Sq_I1</span> = <span class="cl">&#64;Hot2</span>, <span class="cl">Sq_N1</span> = <span class="cl">&#64;Hot3</span>,
+		<span class="cl">Sq_G1</span> = <span class="cl">&#64;Hot4</span>, <span class="cl">Sq_O1</span> = <span class="cl">&#64;Hot5</span>,
+        IsGuaranteed = 1
+    <span class="kw">WHERE</span> CardSeq = 1;
+
+    <span class="cm">-- Bulk insert all cards into Cards table</span>
+    <span class="kw">INSERT INTO</span> <span class="tn">Cards</span> (<span class="cl">Game_ID</span>, <span class="cl">Card_Date_Create</span>, <span class="cl">PlayCount</span>,
+                        <span class="cl">Card_IsWinner</span>, <span class="cl">Card_SeedKey</span>, <span class="cl">Sq_B1</span>, <span class="cm">/* ... */</span> <span class="cl">Sq_O5</span>)
+    <span class="kw">SELECT</span>
+		<span class="cl">&#64;Game_ID</span>, SYSDATETIME(), 0, 0,
+        <span class="kw">CONVERT</span>(<span class="tp">VARCHAR(36)</span>, <span class="kw">NEWID()</span>),
+        Sq_B1, <span class="cm">/* ... */</span> Sq_O5
+    <span class="kw">FROM</span> #NewCards
+    <span class="kw">ORDER BY</span> CardSeq;
+
+<span class="kw">END</span>;
+<span class="kw">GO</span></pre>
+				</div>
+
+				<div class="code-wrap">
+					<div class="code-label">SQL — usp_PreviewCard (helper)</div>
+					<pre><span class="kw">CREATE OR ALTER PROCEDURE</span> usp_PreviewCard
+	<span class="cl">&#64;Card_ID</span> <span class="tp">INT</span>
+<span class="kw">AS</span>
+<span class="kw">BEGIN</span>
+    <span class="kw">SELECT</span>
+        c.Card_ID, c.Game_ID, c.Card_Date_Create,
+        sB1.Song_Title + <span class="st">' – '</span> + sB1.Song_Artist <span class="kw">AS</span> B1,
+        sI1.Song_Title + <span class="st">' – '</span> + sI1.Song_Artist <span class="kw">AS</span> I1,
+        <span class="st">'FREE SPACE'</span>                             <span class="kw">AS</span> N3,
+        <span class="cm">-- ... all 25 squares with LEFT JOINs to Songs ...</span>
+        sO5.Song_Title + <span class="st">' – '</span> + sO5.Song_Artist <span class="kw">AS</span> O5
+    <span class="kw">FROM</span> <span class="tn">Cards</span> c
+    <span class="kw">LEFT JOIN</span> <span class="tn">Songs</span> sB1 <span class="kw">ON</span> c.Sq_B1 = sB1.Song_ID
+    <span class="cm">-- ... repeat for all 24 squares ...</span>
+	<span class="kw">WHERE</span> c.Card_ID = <span class="cl">&#64;Card_ID</span>;
+<span class="kw">END</span>;
+<span class="kw">GO</span></pre>
+				</div>
+
+				<div class="code-wrap">
+					<div class="code-label">SQL — Example Usage</div>
+					<pre><span class="cm">-- Generate 200 cards for Game 1, 15-song playlist:</span>
+<span class="kw">EXEC</span> usp_GenerateBingoCards
+	<span class="cl">&#64;Game_ID</span>      = 1,
+	<span class="cl">&#64;CardCount</span>    = 200,
+	<span class="cl">&#64;PlaylistSize</span> = 15;
+
+<span class="cm">-- Preview the guaranteed winner card:</span>
+<span class="kw">EXEC</span> usp_PreviewCard <span class="cl">&#64;Card_ID</span> = 1;</pre>
+				</div>
+
+				<h3>How the Guaranteed Winner Works</h3>
+				<p>The proc picks 5 "hot" songs from your 15-song playlist and forces them into the <strong>top row</strong> (B1, I1, N1, G1, O1) of Card #1. Since all 15 songs will be called during the game, that top row is guaranteed to be a complete line before the night is over. Every other card is randomly generated, so real players compete normally.</p>
+
+				<h3>Key Design Decisions</h3>
+				<table>
+					<tr><th>Decision</th><th>Why</th></tr>
+					<tr><td><code>NEWID()</code> re-shuffled per card</td><td>True randomness — no two cards will be the same</td></tr>
+					<tr><td><code>Card_SeedKey</code> stores a GUID</td><td>Lets you reprint any card identically later</td></tr>
+					<tr><td>Slot 13 mapped to N4 (not N3)</td><td>N3 is always NULL (FREE SPACE), so slots skip over it</td></tr>
+					<tr><td><code>CREATE OR ALTER PROCEDURE</code></td><td>Safe to re-run — won't error if proc already exists</td></tr>
+				</table>
+
+				<div class="note-box">
+					<strong>Two things to decide before going live:</strong><br><br>
+					1. <strong>Song pool scoping</strong> — Currently pulls all active songs. If you want each GameNight to have its own curated playlist (e.g. 80s Night only plays 80s songs), add a <code>GameNight_Songs</code> junction table and filter there.<br><br>
+					2. <strong>Duplicate card prevention</strong> — With 200 cards and a large song pool, near-duplicates are statistically very unlikely, but if you want to enforce uniqueness you can add a <code>CHECKSUM</code> column on the card layout.
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="page-footer">
+		Music Bingo — Database Design Chat · SQL Server 2017 · April 21, 2026
+	</div>
+</section>

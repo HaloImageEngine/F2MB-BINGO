@@ -1,0 +1,27 @@
+<section class="bingo-page">
+  <header class="bingo-page__header">
+    <div>
+      <p class="bingo-page__eyebrow">Music Bingo</p>
+      <h1>Bingo Card</h1>
+      <p class="bingo-page__copy">Twenty-five slots are ready for song assignments.</p>
+    </div>
+  </header>
+
+  <section class="bingo-card surface-card" aria-label="Music bingo card">
+    <div class="bingo-card__grid">
+      <article class="bingo-slot" *ngFor="let slot of slots">
+        <span class="bingo-slot__position">{{ slot.position }}</span>
+        <div class="bingo-slot__content" *ngIf="slot.song; else emptySlot">
+          <p class="bingo-slot__title">{{ slot.song.SongName }}</p>
+          <p class="bingo-slot__artist">{{ slot.song.SongArtist }}</p>
+        </div>
+        <ng-template #emptySlot>
+          <div class="bingo-slot__content bingo-slot__content--empty">
+            <p class="bingo-slot__title">Empty Slot</p>
+            <p class="bingo-slot__artist">Song coming later</p>
+          </div>
+        </ng-template>
+      </article>
+    </div>
+  </section>
+</section>

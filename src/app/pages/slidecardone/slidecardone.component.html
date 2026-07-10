@@ -1,0 +1,194 @@
+<section class="slidecardsw-page slidecards-page--compact">
+  <header class="slidecards-chrome surface-card">
+    <div class="slidecards-chrome__hero-line">
+      <span class="slidecards-chrome__eyebrow">Single Card</span>
+      <h1 class="slidecards-chrome__title">Browse One Bingo Card</h1>
+      <p class="slidecards-chrome__subtitle">
+        Card {{ cardId() }} · Game {{ consoleContext()?.Game_ID ?? '—' }}, CL {{ callListId() ?? '—' }}, In
+        {{ inning() ?? '—' }} (refreshes while ActiveGame is on).
+      </p>
+      <span class="slidecards-chrome__user">
+        {{ currentUser()?.UserAlias || '—' }} · {{ currentUser()?.UserId ?? '—' }}
+      </span>
+      <a routerLink="/console" class="slidecards-chrome__back">Back to CONSOLE</a>
+    </div>
+
+    <div class="slidecards-chrome__toolbar-line" *ngIf="!state().loading && !state().error">
+      <label class="slidecards-chrome__field" for="slidecardone-card-id">
+        <span>Card ID</span>
+        <input
+          id="slidecardone-card-id"
+          type="number"
+          class="slidecards-chrome__input slidecardone-chrome__input--card-id"
+          [value]="cardIdDraft()"
+          (input)="onCardIdDraftInput($event)"
+          (blur)="commitCardIdFromDraft()"
+          (keydown)="onCardIdDraftKeydown($event)"
+          placeholder="ID"
+          min="1"
+        />
+      </label>
+
+      <ng-container *ngIf="card()">
+        <span class="slidecards-chrome__sep" aria-hidden="true"></span>
+
+        <button
+          type="button"
+          class="slidecardsw-print__button slidecards-chrome__print-btn"
+          (click)="printCard()"
+          aria-label="Print this bingo card"
+        >
+          Print Card
+        </button>
+
+        <button
+          type="button"
+          class="slidecardsw-print__button slidecardsw-print__button--secondary slidecards-chrome__print-btn"
+          (click)="printCardWithMeta()"
+          aria-label="Print this bingo card with GameID and CardID"
+        >
+          Print w/ GID/CID
+        </button>
+
+        <span class="slidecards-chrome__slide-meta">1 card loaded</span>
+      </ng-container>
+    </div>
+  </header>
+
+  <section class="surface-card slidecardsw-status slidecards-chrome__status" *ngIf="state().loading">
+    <p>Loading printed card for CardID {{ cardId() }}...</p>
+  </section>
+
+  <section class="surface-card slidecardsw-status slidecardsw-status--error" *ngIf="state().error as error">
+    <p>{{ error }}</p>
+  </section>
+
+  <section class="slidecardone-stage" *ngIf="!state().loading && !state().error && card() as displayedCard">
+    <article class="slidecardsw-card surface-card slidecardone-card">
+      <div class="slidecardsw-card__print-header slidecardsw-banner-container" aria-hidden="true">
+        <div class="slidecardsw-banner-container__left">
+          <img class="slidecardsw-card__print-logo" src="assets/images/DJGogi.png" alt="DJ GOGI logo" />
+        </div>
+        <div class="slidecardsw-banner-container__title">
+          <p class="slidecardsw-card__print-title">DJ Gogi Music Bingo</p>
+        </div>
+        <div class="slidecardsw-banner-container__right">
+          <img class="slidecardsw-card__print-sponsor-logo" src="assets/images/HillTop5.png" alt="HillTop sponsor logo" />
+        </div>
+        <div class="slidecardsw-banner-container__sponsor">
+          <p class="slidecardsw-card__print-sponsor-text">Card ID {{ cardId() }}</p>
+        </div>
+        <div class="slidecardsw-card__print-meta slidecardsw-card__meta">
+          <p class="slidecardsw-card__id-row">
+            <span
+              class="slidecardsw-card__id-pair"
+              [class.slidecardsw-card__id-pair--print-hidden]="!showPrintCardMeta()"
+            >
+              <span class="slidecardsw-card__id-label">GID</span>
+              <span class="slidecardsw-card__id-value">{{ displayedCard.GameID }}</span>
+            </span>
+            <span class="slidecardsw-card__id-pair">
+              <span class="slidecardsw-card__id-label">CLID</span>
+              <span class="slidecardsw-card__id-value">{{ callListId() ?? '—' }}</span>
+            </span>
+            <span class="slidecardsw-card__id-pair">
+              <span class="slidecardsw-card__id-label">Inning</span>
+              <span class="slidecardsw-card__id-value">{{ inning() ?? '—' }}</span>
+            </span>
+            <span
+              class="slidecardsw-card__id-pair"
+              [class.slidecardsw-card__id-pair--print-hidden]="!showPrintCardMeta()"
+            >
+              <span class="slidecardsw-card__id-label">CID</span>
+              <span class="slidecardsw-card__id-value">{{ displayedCard.CardID }}</span>
+            </span>
+          </p>
+        </div>
+      </div>
+
+      <header class="slidecardsw-card__header slidecardsw-sponsor-container">
+        <div class="slidecardsw-card__meta slidecardsw-card__meta--screen">
+          <p class="slidecardsw-card__id-row">
+            <span class="slidecardsw-card__id-pair">
+              <span class="slidecardsw-card__id-label">GID</span>
+              <span class="slidecardsw-card__id-value">{{ displayedCard.GameID }}</span>
+            </span>
+            <span class="slidecardsw-card__id-pair">
+              <span class="slidecardsw-card__id-label">CLID</span>
+              <span class="slidecardsw-card__id-value">{{ callListId() ?? '—' }}</span>
+            </span>
+            <span class="slidecardsw-card__id-pair">
+              <span class="slidecardsw-card__id-label">Inning</span>
+              <span class="slidecardsw-card__id-value">{{ inning() ?? '—' }}</span>
+            </span>
+            <span class="slidecardsw-card__id-pair">
+              <span class="slidecardsw-card__id-label">CID</span>
+              <span class="slidecardsw-card__id-value">{{ displayedCard.CardID }}</span>
+            </span>
+          </p>
+        </div>
+        <div class="slidecardsw-sponsor-area" aria-label="Card id display">
+          <div class="slidecardsw-sponsor-banner">
+            <span class="slidecardsw-sponsor-banner__label">Card ID {{ cardId() }}</span>
+            <span class="slidecardsw-sponsor-banner__gci">Call list ID {{ callListId() ?? '—' }} · Inning {{ inning() ?? '—' }}</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="slidecardsw-card__grid" aria-label="Bingo card squares">
+        <article
+          class="slidecardsw-square"
+          *ngFor="let square of displayedCard.Squares"
+          [class.is-called]="square.IsCalled"
+          [class.is-free]="square.IsFreeSpace"
+        >
+          <div class="slidecardsw-square__topline">
+            <span>{{ square.SquareCode }}</span>
+            <span>{{ square.SquarePosition }}</span>
+          </div>
+          <div class="slidecardsw-square__content" *ngIf="square.Song; else freeSpaceTemplate">
+            <p class="slidecardsw-square__title">{{ square.Song.SongName }}</p>
+            <p class="slidecardsw-square__artist">{{ square.Song.SongArtist }}</p>
+          </div>
+          <ng-template #freeSpaceTemplate>
+            <div class="slidecardsw-square__content slidecardsw-square__content--free">
+              <p class="slidecardsw-square__title">DJ GOGI</p>
+              <p class="slidecardsw-square__artist">Freebie</p>
+            </div>
+          </ng-template>
+        </article>
+      </div>
+
+      <footer class="slidecardsw-card__print-footer" aria-hidden="true">
+        <div class="slidecardsw-card__print-footer-zone">
+          <img
+            class="slidecardsw-card__print-footer-qr"
+            [src]="qrSettings.qrImageUrls()[0]"
+            [alt]="'QR code 1: ' + qrSettings.qrLink1()"
+          />
+          <span class="slidecardsw-card__print-footer-caption">{{ qrSettings.qrLabel1() }}</span>
+        </div>
+        <div class="slidecardsw-card__print-footer-zone">
+          <img
+            class="slidecardsw-card__print-footer-qr"
+            [src]="qrSettings.qrImageUrls()[1]"
+            [alt]="'QR code 2: ' + qrSettings.qrLink2()"
+          />
+          <span class="slidecardsw-card__print-footer-caption">{{ qrSettings.qrLabel2() }}</span>
+        </div>
+        <div class="slidecardsw-card__print-footer-zone">
+          <img
+            class="slidecardsw-card__print-footer-qr"
+            [src]="qrSettings.qrImageUrls()[2]"
+            [alt]="'QR code 3: ' + qrSettings.qrLink3()"
+          />
+          <span class="slidecardsw-card__print-footer-caption">{{ qrSettings.qrLabel3() }}</span>
+        </div>
+      </footer>
+    </article>
+  </section>
+
+  <section class="surface-card slidecardsw-status" *ngIf="!state().loading && !state().error && !card()">
+    <p>No card was returned for CardID {{ cardId() }}.</p>
+  </section>
+</section>

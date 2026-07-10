@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music Bingo — Database Schema</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0f;
+    --surface: #16161a;
+    --card: #1e1e24;
+    --border: #2e2e38;
+    --accent: #f0c040;
+    --accent2: #e06060;
+    --accent3: #60b8e0;
+    --accent4: #80e0a0;
+    --text: #e8e8f0;
+    --muted: #7878a0;
+    --pk: #f0c040;
+    --fk: #60b8e0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    padding: 40px 24px;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 80% 10%, rgba(240,192,64,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 10% 80%, rgba(96,184,224,0.07) 0%, transparent 70%);
+  }
+  header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(52px, 8vw, 88px);
+    letter-spacing: 6px;
+    background: linear-gradient(135deg, var(--accent) 0%, #e08840 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+  header p {
+    color: var(--muted);
+    font-size: 14px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 10px;
+  }
+
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    flex-wrap: wrap;
+    margin-bottom: 48px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+  .schema-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .table-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .table-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+  }
+  .table-card.featured {
+    grid-column: 1 / -1;
+  }
+
+  .table-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .table-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+  }
+  .table-tag {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+
+  /* Table accent colors */
+  .t-gamenight .table-header { border-top: 3px solid var(--accent4); }
+  .t-gamenight .table-name { color: var(--accent4); }
+  .t-gamenight .table-tag { background: rgba(128,224,160,0.12); color: var(--accent4); }
+
+  .t-game .table-header { border-top: 3px solid var(--accent); }
+  .t-game .table-name { color: var(--accent); }
+  .t-game .table-tag { background: rgba(240,192,64,0.12); color: var(--accent); }
+
+  .t-cards .table-header { border-top: 3px solid var(--accent2); }
+  .t-cards .table-name { color: var(--accent2); }
+  .t-cards .table-tag { background: rgba(224,96,96,0.12); color: var(--accent2); }
+
+  .t-songs .table-header { border-top: 3px solid var(--accent3); }
+  .t-songs .table-name { color: var(--accent3); }
+  .t-songs .table-tag { background: rgba(96,184,224,0.12); color: var(--accent3); }
+
+  .table-body { padding: 0; }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 22px 1fr 100px 1fr;
+    gap: 8px;
+    align-items: center;
+    padding: 9px 20px;
+    border-bottom: 1px solid rgba(46,46,56,0.6);
+    font-family: 'DM Mono', monospace;
+    font-size: 12.5px;
+    transition: background 0.15s;
+  }
+  .field-row:hover { background: rgba(255,255,255,0.03); }
+  .field-row:last-child { border-bottom: none; }
+
+  .field-row.section-header {
+    background: rgba(255,255,255,0.02);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 8px 20px;
+    cursor: default;
+    grid-template-columns: 1fr;
+  }
+  .field-row.section-header:hover { background: rgba(255,255,255,0.02); }
+
+  .key-badge {
+    font-size: 9px;
+    font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    padding: 1px 5px;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+  }
+  .pk-badge { background: rgba(240,192,64,0.2); color: var(--pk); }
+  .fk-badge { background: rgba(96,184,224,0.2); color: var(--fk); }
+
+  .field-name { color: var(--text); font-weight: 500; }
+  .field-type { color: var(--accent3); font-size: 11px; }
+  .field-desc { color: var(--muted); font-size: 11px; font-family: 'DM Sans', sans-serif; }
+
+  /* Bingo squares grid inside Cards */
+  .squares-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+  }
+  .square-cell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 4px;
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    transition: border-color 0.2s, color 0.2s;
+    position: relative;
+  }
+  .square-cell:hover {
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+  .square-cell.free-space {
+    background: rgba(224,96,96,0.12);
+    border-color: var(--accent2);
+    color: var(--accent2);
+    font-weight: 600;
+  }
+  .square-cell .sq-label { font-size: 9px; display: block; margin-bottom: 2px; color: var(--muted); }
+  .square-cell .sq-name { font-size: 10px; font-weight: 500; }
+
+  .bingo-header {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    padding: 10px 20px 0;
+  }
+  .bingo-letter {
+    text-align: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: var(--accent2);
+  }
+
+  .relationship-section {
+    max-width: 1400px;
+    margin: 48px auto 0;
+    padding: 28px 32px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .relationship-section h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .rel-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .rel-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    padding: 10px 16px;
+    background: var(--surface);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+  }
+  .rel-arrow { color: var(--accent); font-size: 18px; }
+  .rel-from { color: var(--fk); }
+  .rel-to { color: var(--accent4); }
+  .rel-note { color: var(--muted); font-size: 11px; font-family: 'DM Sans', sans-serif; margin-left: auto; }
+
+  .sql-section {
+    max-width: 1400px;
+    margin: 24px auto 0;
+  }
+  details {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  summary {
+    padding: 18px 28px;
+    cursor: pointer;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    color: var(--accent3);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    list-style: none;
+    user-select: none;
+  }
+  summary:hover { background: rgba(255,255,255,0.02); }
+  summary::after { content: '▾'; margin-left: auto; font-size: 14px; }
+  details[open] summary::after { content: '▴'; }
+  pre {
+    padding: 24px 28px;
+    overflow-x: auto;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    color: var(--text);
+    border-top: 1px solid var(--border);
+  }
+  .kw { color: #c792ea; }
+  .type { color: var(--accent3); }
+  .cmt { color: var(--muted); }
+  .tname { color: var(--accent); }
+  .col { color: var(--accent4); }
+
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 48px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Music Bingo</h1>
+  <p>Database Schema Reference</p>
+</header>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--pk)"></div>Primary Key</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--fk)"></div>Foreign Key</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--accent4)"></div>GameNight</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Game</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--accent2)"></div>Cards</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--accent3)"></div>Songs</div>
+</div>
+
+<div class="schema-grid">
+
+  <!-- GAMENIGHT TABLE -->
+  <div class="table-card t-gamenight">
+    <div class="table-header">
+      <span class="table-name">GameNight</span>
+      <span class="table-tag">Event Container</span>
+    </div>
+    <div class="table-body">
+      <div class="field-row">
+        <span class="key-badge pk-badge">PK</span>
+        <span class="field-name">GN_ID</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">Auto-increment primary key</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">GN_Name</span>
+        <span class="field-type">VARCHAR(100)</span>
+        <span class="field-desc">e.g. "Taylor Night Vol.3"</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">GN_Date</span>
+        <span class="field-type">DATE</span>
+        <span class="field-desc">Night the event is held</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">GN_Venue</span>
+        <span class="field-type">VARCHAR(150)</span>
+        <span class="field-desc">Location / venue name</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">GN_HostName</span>
+        <span class="field-type">VARCHAR(100)</span>
+        <span class="field-desc">Name of the host / DJ</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">GN_MaxPlayers</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">Ticket cap for the night</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">GN_Notes</span>
+        <span class="field-type">TEXT</span>
+        <span class="field-desc">Misc notes / theme details</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">GN_IsActive</span>
+        <span class="field-type">TINYINT(1)</span>
+        <span class="field-desc">1 = active / upcoming</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">GN_CreatedAt</span>
+        <span class="field-type">DATETIME</span>
+        <span class="field-desc">Record creation timestamp</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- GAME TABLE -->
+  <div class="table-card t-game">
+    <div class="table-header">
+      <span class="table-name">Game</span>
+      <span class="table-tag">1 of 5 per Night</span>
+    </div>
+    <div class="table-body">
+      <div class="field-row">
+        <span class="key-badge pk-badge">PK</span>
+        <span class="field-name">Game_ID</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">Auto-increment primary key</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">GN_ID</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">→ GameNight.GN_ID</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Game_Number</span>
+        <span class="field-type">TINYINT</span>
+        <span class="field-desc">1–5 within the night</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Game_Name</span>
+        <span class="field-type">VARCHAR(100)</span>
+        <span class="field-desc">e.g. "Game 1 – 80s Hits"</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Game_StartTime</span>
+        <span class="field-type">DATETIME</span>
+        <span class="field-desc">When game started</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Game_EndTime</span>
+        <span class="field-type">DATETIME</span>
+        <span class="field-desc">When game ended</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Game_WinPattern</span>
+        <span class="field-type">VARCHAR(50)</span>
+        <span class="field-desc">Line / Blackout / X / etc.</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Game_WinnerCard_ID</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">→ Cards.Card_ID (nullable)</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Game_Status</span>
+        <span class="field-type">VARCHAR(20)</span>
+        <span class="field-desc">Pending / Active / Complete</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Game_CreatedAt</span>
+        <span class="field-type">DATETIME</span>
+        <span class="field-desc">Record creation timestamp</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SONGS TABLE -->
+  <div class="table-card t-songs">
+    <div class="table-header">
+      <span class="table-name">Songs</span>
+      <span class="table-tag">Song Library</span>
+    </div>
+    <div class="table-body">
+      <div class="field-row">
+        <span class="key-badge pk-badge">PK</span>
+        <span class="field-name">Song_ID</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">Auto-increment primary key</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Song_Title</span>
+        <span class="field-type">VARCHAR(200)</span>
+        <span class="field-desc">Song title</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Song_Artist</span>
+        <span class="field-type">VARCHAR(150)</span>
+        <span class="field-desc">Artist / band name</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Song_Year</span>
+        <span class="field-type">SMALLINT</span>
+        <span class="field-desc">Release year</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Song_Genre</span>
+        <span class="field-type">VARCHAR(80)</span>
+        <span class="field-desc">Pop / Rock / Country / etc.</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Song_Album</span>
+        <span class="field-type">VARCHAR(200)</span>
+        <span class="field-desc">Album name (optional)</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Song_Duration_Sec</span>
+        <span class="field-type">SMALLINT</span>
+        <span class="field-desc">Length in seconds</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Song_IsActive</span>
+        <span class="field-type">TINYINT(1)</span>
+        <span class="field-desc">1 = available for play</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Song_CreatedAt</span>
+        <span class="field-type">DATETIME</span>
+        <span class="field-desc">Added to library timestamp</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARDS TABLE - featured full width -->
+  <div class="table-card t-cards featured">
+    <div class="table-header">
+      <span class="table-name">Cards</span>
+      <span class="table-tag">Music Bingo Card — 25 Squares</span>
+    </div>
+    <div class="table-body">
+
+      <div class="field-row section-header">Core Card Fields</div>
+      <div class="field-row">
+        <span class="key-badge pk-badge">PK</span>
+        <span class="field-name">Card_ID</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">Auto-increment primary key</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Game_ID</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">→ Game.Game_ID — which game this card belongs to</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Card_Date_Create</span>
+        <span class="field-type">DATETIME</span>
+        <span class="field-desc">Timestamp card was generated</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Card_PlayerName</span>
+        <span class="field-type">VARCHAR(100)</span>
+        <span class="field-desc">Name of the player holding the card</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Card_PlayerEmail</span>
+        <span class="field-type">VARCHAR(150)</span>
+        <span class="field-desc">Player email (for digital delivery)</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">PlayCount</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">Times this card has been used across replays</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Card_IsWinner</span>
+        <span class="field-type">TINYINT(1)</span>
+        <span class="field-desc">1 = this card was the winning card</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Card_SeedKey</span>
+        <span class="field-type">VARCHAR(64)</span>
+        <span class="field-desc">Random seed used to generate card layout (for reproducibility)</span>
+      </div>
+      <div class="field-row">
+        <span></span>
+        <span class="field-name">Card_PrintedAt</span>
+        <span class="field-type">DATETIME</span>
+        <span class="field-desc">When card was printed / sent (nullable)</span>
+      </div>
+
+      <div class="field-row section-header">25 Bingo Squares — Each stores a Song_ID (FK → Songs.Song_ID) &nbsp;|&nbsp; Square 13 = FREE SPACE (NULL)</div>
+
+      <!-- Squares B1-B5 -->
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_B1</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">B column, row 1 — Song_ID</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_B2</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">B column, row 2 — Song_ID</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_B3</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">B column, row 3 — Song_ID</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_B4</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">B column, row 4 — Song_ID</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_B5</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">B column, row 5 — Song_ID</span>
+      </div>
+      <!-- I column -->
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_I1</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">I column, row 1 — Song_ID</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_I2</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">I column, row 2 — Song_ID</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_I3</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">I column, row 3 — Song_ID</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_I4</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">I column, row 4 — Song_ID</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_I5</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">I column, row 5 — Song_ID</span>
+      </div>
+      <!-- N column -->
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_N1</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">N column, row 1 — Song_ID</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_N2</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">N column, row 2 — Song_ID</span>
+      </div>
+      <div class="field-row" style="background:rgba(224,96,96,0.06)">
+        <span></span>
+        <span class="field-name" style="color:var(--accent2)">Sq_N3</span>
+        <span class="field-type">INT NULL</span>
+        <span class="field-desc" style="color:var(--accent2)">⭐ FREE SPACE — always NULL / center square</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_N4</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">N column, row 4 — Song_ID</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_N5</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">N column, row 5 — Song_ID</span>
+      </div>
+      <!-- G column -->
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_G1</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">G column, row 1 — Song_ID</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_G2</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">G column, row 2 — Song_ID</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_G3</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">G column, row 3 — Song_ID</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_G4</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">G column, row 4 — Song_ID</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_G5</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">G column, row 5 — Song_ID</span>
+      </div>
+      <!-- O column -->
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_O1</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">O column, row 1 — Song_ID</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_O2</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">O column, row 2 — Song_ID</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_O3</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">O column, row 3 — Song_ID</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_O4</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">O column, row 4 — Song_ID</span>
+      </div>
+      <div class="field-row">
+        <span class="key-badge fk-badge">FK</span>
+        <span class="field-name">Sq_O5</span>
+        <span class="field-type">INT</span>
+        <span class="field-desc">O column, row 5 — Song_ID</span>
+      </div>
+    </div>
+
+    <!-- Visual Bingo Card Preview -->
+    <div class="bingo-header">
+      <div class="bingo-letter">B</div>
+      <div class="bingo-letter">I</div>
+      <div class="bingo-letter">N</div>
+      <div class="bingo-letter">G</div>
+      <div class="bingo-letter">O</div>
+    </div>
+    <div class="squares-grid">
+      <div class="square-cell"><span class="sq-label">B1</span><span class="sq-name">Song_ID</span></div>
+      <div class="square-cell"><span class="sq-label">I1</span><span class="sq-name">Song_ID</span></div>
+      <div class="square-cell"><span class="sq-label">N1</span><span class="sq-name">Song_ID</span></div>
+      <div class="square-cell"><span class="sq-label">G1</span><span class="sq-name">Song_ID</span></div>
+      <div class="square-cell"><span class="sq-label">O1</span><span class="sq-name">Song_ID</span></div>
+
+      <div class="square-cell"><span class="sq-label">B2</span><span class="sq-name">Song_ID</span></div>
+      <div class="square-cell"><span class="sq-label">I2</span><span class="sq-name">Song_ID</span></div>
+      <div class="square-cell"><span class="sq-label">N2</span><span class="sq-name">Song_ID</span></div>
+      <div class="square-cell"><span class="sq-label">G2</span><span class="sq-name">Song_ID</span></div>
+      <div class="square-cell"><span class="sq-label">O2</span><span class="sq-name">Song_ID</span></div>
+
+      <div class="square-cell"><span class="sq-label">B3</span><span class="sq-name">Song_ID</span></div>
+      <div class="square-cell"><span class="sq-label">I3</span><span class="sq-name">Song_ID</span></div>
+      <div class="square-cell free-space"><span class="sq-label">N3</span><span class="sq-name">FREE</span></div>
+      <div class="square-cell"><span class="sq-label">G3</span><span class="sq-name">Song_ID</span></div>
+      <div class="square-cell"><span class="sq-label">O3</span><span class="sq-name">Song_ID</span></div>
+
+      <div class="square-cell"><span class="sq-label">B4</span><span class="sq-name">Song_ID</span></div>
+      <div class="square-cell"><span class="sq-label">I4</span><span class="sq-name">Song_ID</span></div>
+      <div class="square-cell"><span class="sq-label">N4</span><span class="sq-name">Song_ID</span></div>
+      <div class="square-cell"><span class="sq-label">G4</span><span class="sq-name">Song_ID</span></div>
+      <div class="square-cell"><span class="sq-label">O4</span><span class="sq-name">Song_ID</span></div>
+
+      <div class="square-cell"><span class="sq-label">B5</span><span class="sq-name">Song_ID</span></div>
+      <div class="square-cell"><span class="sq-label">I5</span><span class="sq-name">Song_ID</span></div>
+      <div class="square-cell"><span class="sq-label">N5</span><span class="sq-name">Song_ID</span></div>
+      <div class="square-cell"><span class="sq-label">G5</span><span class="sq-name">Song_ID</span></div>
+      <div class="square-cell"><span class="sq-label">O5</span><span class="sq-name">Song_ID</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Relationships -->
+<div class="relationship-section">
+  <h2>Table Relationships</h2>
+  <ul class="rel-list">
+    <li class="rel-item">
+      <span class="rel-from">GameNight.GN_ID</span>
+      <span class="rel-arrow">→</span>
+      <span class="rel-to">Game.GN_ID</span>
+      <span class="rel-note">One GameNight has exactly 5 Games</span>
+    </li>
+    <li class="rel-item">
+      <span class="rel-from">Game.Game_ID</span>
+      <span class="rel-arrow">→</span>
+      <span class="rel-to">Cards.Game_ID</span>
+      <span class="rel-note">One Game has many Cards (one per player)</span>
+    </li>
+    <li class="rel-item">
+      <span class="rel-from">Songs.Song_ID</span>
+      <span class="rel-arrow">→</span>
+      <span class="rel-to">Cards.Sq_B1 … Sq_O5</span>
+      <span class="rel-note">Each of the 24 active squares holds a Song_ID</span>
+    </li>
+    <li class="rel-item">
+      <span class="rel-from">Game.Game_WinnerCard_ID</span>
+      <span class="rel-arrow">→</span>
+      <span class="rel-to">Cards.Card_ID</span>
+      <span class="rel-note">Optional back-reference to the winning card</span>
+    </li>
+  </ul>
+</div>
+
+<!-- SQL DDL -->
+<div class="sql-section">
+  <details>
+    <summary>📄 &nbsp; View SQL CREATE Statements</summary>
+    <pre><span class="cmt">-- ============================================================
+-- MUSIC BINGO — DDL
+-- ============================================================</span>
+
+<span class="kw">CREATE TABLE</span> <span class="tname">GameNight</span> (
+  <span class="col">GN_ID</span>          <span class="type">INT</span>           <span class="kw">NOT NULL AUTO_INCREMENT PRIMARY KEY</span>,
+  <span class="col">GN_Name</span>        <span class="type">VARCHAR(100)</span>  <span class="kw">NOT NULL</span>,
+  <span class="col">GN_Date</span>        <span class="type">DATE</span>          <span class="kw">NOT NULL</span>,
+  <span class="col">GN_Venue</span>       <span class="type">VARCHAR(150)</span>  <span class="kw">NULL</span>,
+  <span class="col">GN_HostName</span>    <span class="type">VARCHAR(100)</span>  <span class="kw">NULL</span>,
+  <span class="col">GN_MaxPlayers</span>  <span class="type">INT</span>           <span class="kw">NULL</span>,
+  <span class="col">GN_Notes</span>       <span class="type">TEXT</span>          <span class="kw">NULL</span>,
+  <span class="col">GN_IsActive</span>    <span class="type">TINYINT(1)</span>    <span class="kw">NOT NULL DEFAULT</span> 1,
+  <span class="col">GN_CreatedAt</span>   <span class="type">DATETIME</span>      <span class="kw">NOT NULL DEFAULT CURRENT_TIMESTAMP</span>
+);
+
+<span class="kw">CREATE TABLE</span> <span class="tname">Songs</span> (
+  <span class="col">Song_ID</span>           <span class="type">INT</span>           <span class="kw">NOT NULL AUTO_INCREMENT PRIMARY KEY</span>,
+  <span class="col">Song_Title</span>        <span class="type">VARCHAR(200)</span>  <span class="kw">NOT NULL</span>,
+  <span class="col">Song_Artist</span>       <span class="type">VARCHAR(150)</span>  <span class="kw">NOT NULL</span>,
+  <span class="col">Song_Year</span>         <span class="type">SMALLINT</span>      <span class="kw">NULL</span>,
+  <span class="col">Song_Genre</span>        <span class="type">VARCHAR(80)</span>   <span class="kw">NULL</span>,
+  <span class="col">Song_Album</span>        <span class="type">VARCHAR(200)</span>  <span class="kw">NULL</span>,
+  <span class="col">Song_Duration_Sec</span> <span class="type">SMALLINT</span>      <span class="kw">NULL</span>,
+  <span class="col">Song_IsActive</span>     <span class="type">TINYINT(1)</span>    <span class="kw">NOT NULL DEFAULT</span> 1,
+  <span class="col">Song_CreatedAt</span>    <span class="type">DATETIME</span>      <span class="kw">NOT NULL DEFAULT CURRENT_TIMESTAMP</span>
+);
+
+<span class="kw">CREATE TABLE</span> <span class="tname">Game</span> (
+  <span class="col">Game_ID</span>           <span class="type">INT</span>          <span class="kw">NOT NULL AUTO_INCREMENT PRIMARY KEY</span>,
+  <span class="col">GN_ID</span>             <span class="type">INT</span>          <span class="kw">NOT NULL</span>,
+  <span class="col">Game_Number</span>       <span class="type">TINYINT</span>      <span class="kw">NOT NULL</span>,  <span class="cmt">-- 1 through 5</span>
+  <span class="col">Game_Name</span>         <span class="type">VARCHAR(100)</span> <span class="kw">NULL</span>,
+  <span class="col">Game_StartTime</span>    <span class="type">DATETIME</span>     <span class="kw">NULL</span>,
+  <span class="col">Game_EndTime</span>      <span class="type">DATETIME</span>     <span class="kw">NULL</span>,
+  <span class="col">Game_WinPattern</span>   <span class="type">VARCHAR(50)</span>  <span class="kw">NULL</span>,
+  <span class="col">Game_WinnerCard_ID</span> <span class="type">INT</span>         <span class="kw">NULL</span>,
+  <span class="col">Game_Status</span>       <span class="type">VARCHAR(20)</span>  <span class="kw">NOT NULL DEFAULT</span> <span class="cmt">'Pending'</span>,
+  <span class="col">Game_CreatedAt</span>    <span class="type">DATETIME</span>     <span class="kw">NOT NULL DEFAULT CURRENT_TIMESTAMP</span>,
+  <span class="kw">FOREIGN KEY</span> (<span class="col">GN_ID</span>) <span class="kw">REFERENCES</span> <span class="tname">GameNight</span>(<span class="col">GN_ID</span>),
+  <span class="kw">CONSTRAINT</span> uq_game_number <span class="kw">UNIQUE</span> (<span class="col">GN_ID</span>, <span class="col">Game_Number</span>),
+  <span class="kw">CONSTRAINT</span> chk_game_number <span class="kw">CHECK</span> (<span class="col">Game_Number</span> <span class="kw">BETWEEN</span> 1 <span class="kw">AND</span> 5)
+);
+
+<span class="kw">CREATE TABLE</span> <span class="tname">Cards</span> (
+  <span class="cmt">-- Core fields</span>
+  <span class="col">Card_ID</span>         <span class="type">INT</span>          <span class="kw">NOT NULL AUTO_INCREMENT PRIMARY KEY</span>,
+  <span class="col">Game_ID</span>         <span class="type">INT</span>          <span class="kw">NOT NULL</span>,
+  <span class="col">Card_Date_Create</span> <span class="type">DATETIME</span>    <span class="kw">NOT NULL DEFAULT CURRENT_TIMESTAMP</span>,
+  <span class="col">Card_PlayerName</span> <span class="type">VARCHAR(100)</span> <span class="kw">NULL</span>,
+  <span class="col">Card_PlayerEmail</span> <span class="type">VARCHAR(150)</span> <span class="kw">NULL</span>,
+  <span class="col">PlayCount</span>       <span class="type">INT</span>          <span class="kw">NOT NULL DEFAULT</span> 0,
+  <span class="col">Card_IsWinner</span>   <span class="type">TINYINT(1)</span>   <span class="kw">NOT NULL DEFAULT</span> 0,
+  <span class="col">Card_SeedKey</span>    <span class="type">VARCHAR(64)</span>  <span class="kw">NULL</span>,
+  <span class="col">Card_PrintedAt</span>  <span class="type">DATETIME</span>     <span class="kw">NULL</span>,
+  <span class="cmt">-- 25 Bingo Squares (B=col1, I=col2, N=col3, G=col4, O=col5 / rows 1-5)</span>
+  <span class="col">Sq_B1</span> <span class="type">INT</span> <span class="kw">NULL</span>, <span class="col">Sq_B2</span> <span class="type">INT</span> <span class="kw">NULL</span>, <span class="col">Sq_B3</span> <span class="type">INT</span> <span class="kw">NULL</span>, <span class="col">Sq_B4</span> <span class="type">INT</span> <span class="kw">NULL</span>, <span class="col">Sq_B5</span> <span class="type">INT</span> <span class="kw">NULL</span>,
+  <span class="col">Sq_I1</span> <span class="type">INT</span> <span class="kw">NULL</span>, <span class="col">Sq_I2</span> <span class="type">INT</span> <span class="kw">NULL</span>, <span class="col">Sq_I3</span> <span class="type">INT</span> <span class="kw">NULL</span>, <span class="col">Sq_I4</span> <span class="type">INT</span> <span class="kw">NULL</span>, <span class="col">Sq_I5</span> <span class="type">INT</span> <span class="kw">NULL</span>,
+  <span class="col">Sq_N1</span> <span class="type">INT</span> <span class="kw">NULL</span>, <span class="col">Sq_N2</span> <span class="type">INT</span> <span class="kw">NULL</span>, <span class="col">Sq_N3</span> <span class="type">INT</span> <span class="kw">NULL</span>, <span class="col">Sq_N4</span> <span class="type">INT</span> <span class="kw">NULL</span>, <span class="col">Sq_N5</span> <span class="type">INT</span> <span class="kw">NULL</span>,  <span class="cmt">-- Sq_N3 = FREE SPACE</span>
+  <span class="col">Sq_G1</span> <span class="type">INT</span> <span class="kw">NULL</span>, <span class="col">Sq_G2</span> <span class="type">INT</span> <span class="kw">NULL</span>, <span class="col">Sq_G3</span> <span class="type">INT</span> <span class="kw">NULL</span>, <span class="col">Sq_G4</span> <span class="type">INT</span> <span class="kw">NULL</span>, <span class="col">Sq_G5</span> <span class="type">INT</span> <span class="kw">NULL</span>,
+  <span class="col">Sq_O1</span> <span class="type">INT</span> <span class="kw">NULL</span>, <span class="col">Sq_O2</span> <span class="type">INT</span> <span class="kw">NULL</span>, <span class="col">Sq_O3</span> <span class="type">INT</span> <span class="kw">NULL</span>, <span class="col">Sq_O4</span> <span class="type">INT</span> <span class="kw">NULL</span>, <span class="col">Sq_O5</span> <span class="type">INT</span> <span class="kw">NULL</span>,
+  <span class="kw">FOREIGN KEY</span> (<span class="col">Game_ID</span>) <span class="kw">REFERENCES</span> <span class="tname">Game</span>(<span class="col">Game_ID</span>),
+  <span class="kw">FOREIGN KEY</span> (<span class="col">Sq_B1</span>) <span class="kw">REFERENCES</span> <span class="tname">Songs</span>(<span class="col">Song_ID</span>),
+  <span class="col">/* ... repeat FK for all 24 active squares ... */</span>
+  <span class="kw">FOREIGN KEY</span> (<span class="col">Sq_O5</span>) <span class="kw">REFERENCES</span> <span class="tname">Songs</span>(<span class="col">Song_ID</span>)
+);</pre>
+  </details>
+</div>
+
+<footer style="margin-top:48px">Music Bingo Schema &nbsp;•&nbsp; 4 Tables &nbsp;•&nbsp; GameNight → Game → Cards + Songs</footer>
+
+</body>
+</html>

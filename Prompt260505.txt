@@ -1,0 +1,44 @@
+Here is my game table : 
+CREATE TABLE [dbo].[Game](
+	[Game_ID] [int] IDENTITY(1,1) NOT NULL,
+	[GN_ID] [int] NOT NULL,
+	[Game_Number] [tinyint] NOT NULL,
+	[Game_Name] [varchar](100) NULL,
+	[Game_StartTime] [datetime2](7) NULL,
+	[Game_EndTime] [datetime2](7) NULL,
+	[Game_WinPattern] [varchar](50) NULL,
+	[Game_WinnerCard_ID] [int] NULL,
+	[Game_Status] [varchar](20) NOT NULL,
+	[Game_CreatedAt] [datetime2](7) NOT NULL,
+ CONSTRAINT [PK_Game] PRIMARY KEY CLUSTERED 
+
+Here is my GameNight table :
+CREATE TABLE [dbo].[GameNight](
+	[GN_ID] [int] IDENTITY(1,1) NOT NULL,
+	[GN_Name] [varchar](100) NOT NULL,
+	[GN_Date] [date] NOT NULL,
+	[GN_Venue] [varchar](150) NULL,
+	[GN_HostName] [varchar](100) NULL,
+	[GN_MaxPlayers] [int] NULL,
+	[GN_Notes] [nvarchar](max) NULL,
+	[GN_IsActive] [bit] NOT NULL,
+	[GN_CreatedAt] [datetime2](7) NOT NULL,
+ CONSTRAINT [PK_GameNight] PRIMARY KEY CLUSTERED 
+
+
+Create a stored proc called 'usp_Insert_GameNight_Game_Table',
+we will pass these values 
+	[GN_Name] [varchar](100) NOT NULL,
+	[GN_Date] [date] NOT NULL,
+	[GN_Venue] [varchar](150) NULL,
+	[Game_Number] [tinyint] NOT NULL,
+	[Game_Name] [varchar](100) NULL,
+
+create an insert for both tables [GameNight] and pass these fields [GN_Name] ,[GN_Date]
+
+1) Read the 'usp_Insert_GameNight_Game_Table' stored proc in the workspace. 
+2) Then create a method in DataAccess02.cs to call the stored proc and 
+3) build a data model for input and outputs. 
+4) Create an endpoint in BingoDjGogiController for an rest api endpoint.
+
+

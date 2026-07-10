@@ -1,0 +1,35 @@
+{
+ "Call_List_ID": 7,
+  "Call_List_Name": "Test CL7",
+  "Call_List_Date": "2026-06-08T16:20:02.486Z",
+  "Call_List_Description": "CL 7",
+  "Game_ID": 0,
+  "User_ID": 1038,
+  "Call_List_Genre": "One Hit Wonders",
+  "Call_List_Decade": "60s",
+  "Call_List_Era": "Mid 80s Rock",
+  "Call_List_SongCount": 31,
+  "Call_List_IsActive": true,
+  "InningNumber": 0,
+  "Call_List_CreatedAt": "2026-06-08T16:20:02.486Z",
+  "Message": ""
+}
+
+
+{
+  "Call_List_ID": 7,
+  "User_ID": 1038,
+  "Game_ID": 6,
+  "Game_Number": null,
+  "InningNumber": 3,
+  "Call_List_Name": "TT Test CL7",
+  "Call_List_Date": "2026-05-31T00:00:00",
+  "Call_List_Description": "TT CL 7",
+  "Call_List_Genre": "One Hit Wonders",
+  "Call_List_Decade": "60s",
+  "Call_List_Era": "Mid 80s Rock",
+  "Call_List_SongCount": 31,
+  "Call_List_IsActive": true,
+  "Call_List_CreatedAt": "2026-05-31T16:26:43.759844",
+  "Call_List_UpdatedAt": "2026-06-03T12:26:00.263"
+}

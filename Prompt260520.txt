@@ -1,0 +1,83 @@
+
+Prompt : Give me the following list of songs in this format 
+'{ "Title": "string", "Artist": "string", "ArtistType": "string", "Genre": "string", "Subgenre": "string", "Mood": "string", "Tempo": "string", "ReleaseYear": 0, "Decade": "string", "Era": "string", "BingoCategory": "string", "Difficulty": "string", "ChartPeakPosition": 0, "ChartCountry": "string", "SpotifyPopularity": 0, "DurationSeconds": 0, "Active": true }'
+Only give me the .json format.
+
+
+
+
+
+Ten Rounds with Jose Cuervo-Tracy Byrd
+Jose Cuervo- Shelly West
+Its Five O’clock Somewhere- Alan Jackson
+Margaritaville- JImmy Buffet
+Have A Drink on Me-AC/DC
+Tequila Makes Her Clothes Fall Off- Joe Nichols
+Beer for My Horses-Toby Keith
+Watermelon Crawl- Tracy Byrd
+Beer Barrel Polka- Frankie Yankovic
+Buy You A Drink (Shawty)- T-pain, Yung Joc
+Tequila- The Champs
+Tequila Sunrise- Eagles
+Mas Tequila- Sammy Haggar
+Neon Moon- Brooks & Dunn
+Why Don’t We Get Drunk- Jimmy Buffet
+Red Solo Cup- Toby Keith
+Wine, Beer, Whisky- Little Big Town
+Drunk (And I Don’t Want to Go Home)- Elle King Miranda Lambert
+Bartender- T-Pain, Akon
+Bartender- Lady A
+A Bar Song (Tipsy)- Shaboozey
+I Love This Bar- Toby Keith
+Bottoms Up- Brantley Gilbert, T.I.
+Gin and Juice- Snoop Dogg
+Funky Cold Medina- Ton-loc
+Shots- LMFAO, Lil Jon
+Hotel Room Service-Pitbull
+Fireball- Pitbull
+Last Friday Night- Katy Perry
+Bottoms Up- Nickelback
+Bottoms Up- Trey Songz, Nicki Minaj
+Drink In My Hand- Eric Church
+Drinkin’ Problem- Midland
+Pour Me A Drink- Post Malone, Blake Shelton
+Drinkaby-Cole Swindell
+Drunk On A Plane-Dierks Bently
+Ain’t Worth The Whiskey- Cole Swindell
+Whiskey Glasses- Morgan Wallen
+Whiskey Whiskey- Moneybagg Yo, Morgan Wallen
+One Margarita- Luke Bryan
+Mexico, Tequila And Me- Alan Jackson
+Beer Never Broke My Heart- Luke Combs
+AA- Walker Hayes
+Chicken Fried- Zac Brown Band
+Beer Thirty- Brooks & Dunn
+Pretty Good At Drinking Beer-Billy Currington
+Alcohol- Brad Paisley
+Blame It- Jamie Foxx, T-Pain
+Pass The Courvoisier- Busta Rhymes
+Two Pina Coladas- Garth Brooks
+Whiskey Glasses- Morgan Wallen
+Tipsy- J-Kwon
+Out Last Night-Kenny Chesney
+Wild Thing- Ton-Loc
+This is How We Do It- Montell Jordan
+Turn Down For What-DJ Snake
+Let’s Get It Started- Black Eyed Peas
+My House- Flo Rida
+Tik Tok- Kesha
+Clumsy- Fergie
+In The Ayer- Flo Rida
+Jumpin’ Jumpin’- Destiny’s Child
+Don’t Stop The Party-Pitbull, TJR
+Pop Bottles- Birdman, Lil Wayne
+Pop A Top- Alan Jackson
+Low- Flo Rida, T-Pain
+In Da Club- 50 Cent
+Last Name- Carrie Underwood
+Here For The Party- Gretchen Wilson
+Where The Party At- Jagged Edge
+Raise Your Glass- Pink
+Like A G6- Far East Movement
+Pour Me- Trick Pony
+Cheers (Drink to That)- Rihanna

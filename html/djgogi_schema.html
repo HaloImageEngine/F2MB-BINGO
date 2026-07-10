@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DJGogi Database Schema — haloimag_djgogi</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+
+  header {
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  header h1 { font-size: 18px; font-weight: 700; color: #f8fafc; }
+  header .badge {
+    font-size: 12px;
+    color: #94a3b8;
+    background: #334155;
+    padding: 2px 8px;
+    border-radius: 99px;
+  }
+  header .hint { margin-left: auto; color: #64748b; font-size: 11px; }
+
+  .canvas-wrap {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 53px);
+    overflow: hidden;
+  }
+
+  svg#diagram {
+    width: 100%;
+    height: 100%;
+  }
+
+  .tbl-card { cursor: pointer; }
+  .tbl-body { rx: 6; fill: #1e293b; stroke: #334155; stroke-width: 1.5; transition: stroke-width 0.15s, filter 0.15s; }
+  .tbl-card:hover .tbl-body { filter: brightness(1.1); stroke-width: 2.5; }
+  .tbl-card.active .tbl-body { stroke-width: 3; filter: brightness(1.15); }
+
+  .tbl-title { font-size: 12px; font-weight: 700; fill: #fff; font-family: 'Segoe UI', sans-serif; }
+  .col-label  { font-size: 11px; font-family: 'Segoe UI', sans-serif; }
+  .col-pk     { fill: #fbbf24; font-weight: 600; }
+  .col-fk     { fill: #60a5fa; }
+  .col-norm   { fill: #94a3b8; }
+  .rel-line   { fill: none; stroke-width: 1.8; opacity: 0.65; }
+  .rel-label  { font-size: 10px; font-family: 'Segoe UI', sans-serif; fill: #64748b; }
+
+  /* Info Panel */
+  #info-panel {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 280px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  }
+  #info-panel h2 { font-size: 15px; font-weight: 700; color: #f8fafc; margin-bottom: 4px; }
+  #ip-badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  #ip-desc { font-size: 11px; color: #94a3b8; line-height: 1.5; margin-bottom: 10px; }
+  .col-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+    border-bottom: 1px solid #0f172a;
+    font-size: 11px;
+  }
+  .col-row:last-child { border-bottom: none; }
+  .tag {
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-weight: 700;
+    min-width: 30px;
+    text-align: center;
+  }
+  .tag.pk  { background: #92400e; color: #fbbf24; }
+  .tag.fk  { background: #1e3a5f; color: #60a5fa; }
+  .tag.uq  { background: #3b1f5e; color: #c084fc; }
+  .tag.col { background: #1e293b; color: #64748b; border: 1px solid #334155; }
+  .col-name { color: #e2e8f0; flex: 1; }
+  .col-type { color: #475569; font-size: 10px; text-align: right; }
+
+  /* Legend */
+  #legend {
+    position: absolute;
+    bottom: 16px; left: 16px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 11px;
+  }
+  #legend h3 {
+    font-size: 10px; color: #64748b; margin-bottom: 8px;
+    font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  }
+  .leg-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; color: #94a3b8; }
+  .leg-dot  { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+  /* Watermark */
+  #wm {
+    position: absolute;
+    bottom: 16px; right: 16px;
+    font-size: 10px;
+    color: #1e293b;
+    user-select: none;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>DJGogi — Database Schema</h1>
+  <span class="badge">haloimag_djgogi</span>
+  <span class="badge">dbo</span>
+  <span class="hint">Click any table to explore columns &amp; relationships</span>
+</header>
+
+<div class="canvas-wrap">
+<svg id="diagram" viewBox="0 0 960 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr"        markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#475569"/></marker>
+    <marker id="arr-blue"   markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#0ea5e9"/></marker>
+    <marker id="arr-green"  markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#10b981"/></marker>
+    <marker id="arr-amber"  markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#f59e0b"/></marker>
+    <marker id="arr-purple" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#8b5cf6"/></marker>
+    <marker id="arr-slate"  markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0,8 3,0 6" fill="#64748b"/></marker>
+  </defs>
+
+  <!-- ═══ RELATIONSHIP LINES ═══ -->
+  <!-- Users → CallList_Master -->
+  <path class="rel-line" d="M 165 75 L 210 75" stroke="#94a3b8" marker-end="url(#arr)"/>
+  <text class="rel-label" x="185" y="70">1:N</text>
+
+  <!-- Users → Game (dashed) -->
+  <path class="rel-line" d="M 165 90 Q 195 90 195 52 L 450 52" stroke="#94a3b8" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+
+  <!-- CallList_Master → CallList_Songs -->
+  <path class="rel-line" d="M 305 188 L 305 230" stroke="#0ea5e9" marker-end="url(#arr-blue)"/>
+  <text class="rel-label" x="312" y="214">1:N</text>
+
+  <!-- CallList_Master → Game -->
+  <path class="rel-line" d="M 400 100 L 450 100" stroke="#94a3b8" marker-end="url(#arr)"/>
+  <text class="rel-label" x="418" y="95">1:N</text>
+
+  <!-- Game → Cards -->
+  <path class="rel-line" d="M 545 198 L 545 240" stroke="#10b981" marker-end="url(#arr-green)"/>
+  <text class="rel-label" x="552" y="224">1:N</text>
+
+  <!-- CallList_Songs → Cards (song_id refs, dashed) -->
+  <path class="rel-line" d="M 400 310 L 450 310" stroke="#0ea5e9" stroke-dasharray="5,3" marker-end="url(#arr-blue)"/>
+  <text class="rel-label" x="413" y="304">ref</text>
+
+  <!-- Cards → PacketID_Master (PIDT) -->
+  <path class="rel-line" d="M 545 450 L 545 480" stroke="#8b5cf6" marker-end="url(#arr-purple)"/>
+  <text class="rel-label" x="552" y="470">PIDT</text>
+
+  <!-- PacketID_Master → PacketID_Detail -->
+  <path class="rel-line" d="M 660 530 L 700 530" stroke="#8b5cf6" marker-end="url(#arr-purple)"/>
+  <text class="rel-label" x="672" y="524">1:N</text>
+
+  <!-- PacketID_Detail → Cards (Card_ID, dashed) -->
+  <path class="rel-line" d="M 790 480 L 790 400 L 660 380 L 660 355" stroke="#f59e0b" stroke-dasharray="5,3" marker-end="url(#arr-amber)"/>
+  <text class="rel-label" x="728" y="394">Card_ID</text>
+
+  <!-- GameProdType → PacketID_Master (dashed) -->
+  <path class="rel-line" d="M 790 148 L 790 200 L 700 200 L 700 490 L 660 490" stroke="#64748b" stroke-dasharray="5,3" marker-end="url(#arr-slate)"/>
+  <text class="rel-label" x="704" y="196">GPTypeID</text>
+
+  <!-- ═══ TABLE: Users ═══ -->
+  <g class="tbl-card" onclick="showInfo('users')" id="node-users">
+    <rect class="tbl-body" x="20" y="40" width="145" height="115" rx="6" stroke="#4f46e5"/>
+    <rect x="20" y="40" width="145" height="26" rx="6" fill="#4f46e5"/>
+    <rect x="20" y="54"  width="145" height="12"  fill="#4f46e5"/>
+    <text class="tbl-title" x="92" y="57" text-anchor="middle">Users</text>
+    <text class="col-label col-pk"   x="32" y="82">🔑 User_ID</text>
+    <text class="col-label col-norm" x="32" y="98">   Email</text>
+    <text class="col-label col-norm" x="32" y="114">   Name</text>
+    <text class="col-label col-norm" x="32" y="130">   ...</text>
+  </g>
+
+  <!-- ═══ TABLE: CallList_Master ═══ -->
+  <g class="tbl-card" onclick="showInfo('clm')" id="node-clm">
+    <rect class="tbl-body" x="210" y="40" width="190" height="148" rx="6" stroke="#0ea5e9"/>
+    <rect x="210" y="40" width="190" height="26" rx="6" fill="#0ea5e9"/>
+    <rect x="210" y="54" width="190" height="12"  fill="#0ea5e9"/>
+    <text class="tbl-title" x="305" y="57" text-anchor="middle">CallList_Master</text>
+    <text class="col-label col-pk"   x="222" y="82">🔑 Call_List_ID</text>
+    <text class="col-label col-fk"   x="222" y="98">   User_ID (FK)</text>
+    <text class="col-label col-fk"   x="222" y="114">   Game_ID (FK)</text>
+    <text class="col-label col-norm" x="222" y="130">   InningNumber</text>
+    <text class="col-label col-norm" x="222" y="146">   Call_List_Name</text>
+    <text class="col-label col-norm" x="222" y="162">   Genre / Decade / Era</text>
+    <text class="col-label col-norm" x="222" y="178">   SongCount / IsActive</text>
+  </g>
+
+  <!-- ═══ TABLE: CallList_Songs ═══ -->
+  <g class="tbl-card" onclick="showInfo('cls')" id="node-cls">
+    <rect class="tbl-body" x="210" y="230" width="190" height="148" rx="6" stroke="#0ea5e9"/>
+    <rect x="210" y="230" width="190" height="26" rx="6" fill="#0284c7"/>
+    <rect x="210" y="244" width="190" height="12"  fill="#0284c7"/>
+    <text class="tbl-title" x="305" y="247" text-anchor="middle">CallList_Songs</text>
+    <text class="col-label col-pk"   x="222" y="272">🔑 song_id / CL_Song_ID</text>
+    <text class="col-label col-fk"   x="222" y="288">   Call_List_ID (FK)</text>
+    <text class="col-label col-norm" x="222" y="304">   Inning</text>
+    <text class="col-label col-norm" x="222" y="320">   title / artist</text>
+    <text class="col-label col-norm" x="222" y="336">   genre / decade / era</text>
+    <text class="col-label col-norm" x="222" y="352">   release_year / explicit</text>
+  </g>
+
+  <!-- ═══ TABLE: Game ═══ -->
+  <g class="tbl-card" onclick="showInfo('game')" id="node-game">
+    <rect class="tbl-body" x="450" y="40" width="210" height="158" rx="6" stroke="#10b981"/>
+    <rect x="450" y="40" width="210" height="26" rx="6" fill="#10b981"/>
+    <rect x="450" y="54" width="210" height="12"  fill="#10b981"/>
+    <text class="tbl-title" x="555" y="57" text-anchor="middle">Game</text>
+    <text class="col-label col-pk"   x="462" y="82">🔑 Game_ID (IDENTITY)</text>
+    <text class="col-label col-fk"   x="462" y="98">   User_ID (FK)</text>
+    <text class="col-label col-fk"   x="462" y="114">   Call_List_ID (FK)</text>
+    <text class="col-label col-norm" x="462" y="130">   Game_Number</text>
+    <text class="col-label col-norm" x="462" y="146">   Game_Inning</text>
+    <text class="col-label col-norm" x="462" y="162">   Game_Status</text>
+    <text class="col-label col-norm" x="462" y="178">   Game_WinPattern</text>
+  </g>
+
+  <!-- ═══ TABLE: Cards ═══ -->
+  <g class="tbl-card" onclick="showInfo('cards')" id="node-cards">
+    <rect class="tbl-body" x="450" y="240" width="210" height="210" rx="6" stroke="#f59e0b"/>
+    <rect x="450" y="240" width="210" height="26" rx="6" fill="#f59e0b"/>
+    <rect x="450" y="254" width="210" height="12"  fill="#f59e0b"/>
+    <text class="tbl-title" x="555" y="257" text-anchor="middle" fill="#0f172a">Cards</text>
+    <text class="col-label col-pk"   x="462" y="282">🔑 Card_ID (IDENTITY)</text>
+    <text class="col-label col-fk"   x="462" y="298">   User_ID (FK)</text>
+    <text class="col-label col-fk"   x="462" y="314">   Game_ID (FK)</text>
+    <text class="col-label col-fk"   x="462" y="330">   Call_List_ID (FK)</text>
+    <text class="col-label col-norm" x="462" y="346">   Inning</text>
+    <text class="col-label col-fk"   x="462" y="362">   PIDT (FK → PacketMaster)</text>
+    <text class="col-label col-norm" x="462" y="378">   Card_IsWinner</text>
+    <text class="col-label col-norm" x="462" y="394">   Sq_B1…Sq_O5 (song_ids)</text>
+    <text class="col-label col-norm" x="462" y="410">   Sq_*_Called (bit flags)</text>
+    <text class="col-label col-norm" x="462" y="426">   Card_PrintedAt</text>
+  </g>
+
+  <!-- ═══ TABLE: PacketID_Master ═══ -->
+  <g class="tbl-card" onclick="showInfo('pm')" id="node-pm">
+    <rect class="tbl-body" x="450" y="480" width="210" height="110" rx="6" stroke="#8b5cf6"/>
+    <rect x="450" y="480" width="210" height="26" rx="6" fill="#8b5cf6"/>
+    <rect x="450" y="494" width="210" height="12"  fill="#8b5cf6"/>
+    <text class="tbl-title" x="555" y="497" text-anchor="middle">PacketID_Master</text>
+    <text class="col-label col-pk"   x="462" y="522">🔑 PM_ID (IDENTITY)</text>
+    <text class="col-label col-pk"   x="462" y="538">🔑 PIDT (UQ token)</text>
+    <text class="col-label col-norm" x="462" y="554">   Game_ID / Call_List_ID</text>
+    <text class="col-label col-fk"   x="462" y="570">   GPTypeID (FK)</text>
+  </g>
+
+  <!-- ═══ TABLE: PacketID_Detail ═══ -->
+  <g class="tbl-card" onclick="showInfo('pd')" id="node-pd">
+    <rect class="tbl-body" x="700" y="480" width="200" height="110" rx="6" stroke="#8b5cf6"/>
+    <rect x="700" y="480" width="200" height="26" rx="6" fill="#7c3aed"/>
+    <rect x="700" y="494" width="200" height="12"  fill="#7c3aed"/>
+    <text class="tbl-title" x="800" y="497" text-anchor="middle">PacketID_Detail</text>
+    <text class="col-label col-pk"   x="712" y="522">🔑 PD_ID (IDENTITY)</text>
+    <text class="col-label col-fk"   x="712" y="538">   PIDT (FK → Master)</text>
+    <text class="col-label col-fk"   x="712" y="554">   Card_ID (FK → Cards)</text>
+    <text class="col-label col-norm" x="712" y="570">   Status / Winner</text>
+  </g>
+
+  <!-- ═══ TABLE: GameProdType ═══ -->
+  <g class="tbl-card" onclick="showInfo('gpt')" id="node-gpt">
+    <rect class="tbl-body" x="700" y="40" width="200" height="108" rx="6" stroke="#64748b"/>
+    <rect x="700" y="40" width="200" height="26" rx="6" fill="#475569"/>
+    <rect x="700" y="54" width="200" height="12"  fill="#475569"/>
+    <text class="tbl-title" x="800" y="57" text-anchor="middle">GameProdType</text>
+    <text class="col-label col-pk"   x="712" y="82">🔑 GPTypeID</text>
+    <text class="col-label col-norm" x="712" y="98">   GPCode</text>
+    <text class="col-label col-norm" x="712" y="114">   GPDescription</text>
+    <text class="col-label" x="712" y="130" fill="#22d3ee" font-size="10">   FML / PRO / ETS</text>
+  </g>
+
+</svg>
+
+<!-- Info Panel -->
+<div id="info-panel">
+  <h2 id="ip-title">Click a table</h2>
+  <span id="ip-badge" class="badge" style="background:#1e293b;color:#64748b;display:inline-block;margin-bottom:10px;">schema</span>
+  <p id="ip-desc" style="font-size:11px;color:#64748b;line-height:1.5;margin-bottom:10px;">
+    Select any table in the diagram to see its columns, types, and role in the system.
+  </p>
+  <div id="ip-cols"></div>
+</div>
+
+<!-- Legend -->
+<div id="legend">
+  <h3>Legend</h3>
+  <div class="leg-row"><div class="leg-dot" style="background:#fbbf24"></div> Primary Key</div>
+  <div class="leg-row"><div class="leg-dot" style="background:#60a5fa"></div> Foreign Key</div>
+  <div class="leg-row"><div class="leg-dot" style="background:#c084fc"></div> Unique Constraint</div>
+  <div class="leg-row">
+    <svg width="32" height="10"><line x1="0" y1="5" x2="32" y2="5" stroke="#475569" stroke-width="2"/></svg>
+    FK Relationship
+  </div>
+  <div class="leg-row">
+    <svg width="32" height="10"><line x1="0" y1="5" x2="32" y2="5" stroke="#475569" stroke-width="2" stroke-dasharray="4,3"/></svg>
+    Logical Reference
+  </div>
+</div>
+
+<div id="wm">haloimag_djgogi · William D Beaty · 2026</div>
+
+</div>
+
+<script>
+const tables = {
+  users: {
+    title: 'Users', color: '#4f46e5',
+    desc: 'DJ/owner accounts. User_ID is the root anchor for all games, call lists, cards, and packets.',
+    cols: [
+      { tag:'pk',  name:'User_ID',  type:'INT IDENTITY' },
+      { tag:'col', name:'Email',    type:'VARCHAR' },
+      { tag:'col', name:'Name',     type:'VARCHAR' },
+    ]
+  },
+  clm: {
+    title: 'CallList_Master', color: '#0ea5e9',
+    desc: 'One row per call list (song set). Defines the genre, decade, era, and inning count for a Music Bingo event.',
+    cols: [
+      { tag:'pk',  name:'Call_List_ID',     type:'INT IDENTITY' },
+      { tag:'fk',  name:'User_ID',          type:'INT → Users' },
+      { tag:'fk',  name:'Game_ID',          type:'INT → Game' },
+      { tag:'col', name:'InningNumber',     type:'INT' },
+      { tag:'col', name:'Call_List_Name',   type:'VARCHAR' },
+      { tag:'col', name:'Genre',            type:'VARCHAR' },
+      { tag:'col', name:'Decade / Era',     type:'VARCHAR' },
+      { tag:'col', name:'SongCount',        type:'INT' },
+      { tag:'col', name:'IsActive',         type:'BIT' },
+      { tag:'col', name:'CreatedAt / UpdatedAt', type:'DATETIME2' },
+    ]
+  },
+  cls: {
+    title: 'CallList_Songs', color: '#0284c7',
+    desc: 'Child songs belonging to a call list. Each song is assigned to an Inning. song_id values are stored in the Sq_ columns of Cards.',
+    cols: [
+      { tag:'pk',  name:'song_id / CL_Song_ID', type:'INT IDENTITY' },
+      { tag:'fk',  name:'Call_List_ID',          type:'INT → CallList_Master' },
+      { tag:'col', name:'Inning',                type:'INT' },
+      { tag:'col', name:'title',                 type:'VARCHAR' },
+      { tag:'col', name:'artist',                type:'VARCHAR' },
+      { tag:'col', name:'featured_artist',       type:'VARCHAR' },
+      { tag:'col', name:'genre / decade / era',  type:'VARCHAR' },
+      { tag:'col', name:'release_year',          type:'INT' },
+      { tag:'col', name:'explicit',              type:'BIT' },
+      { tag:'col', name:'last_played',           type:'DATETIME2' },
+    ]
+  },
+  game: {
+    title: 'Game', color: '#10b981',
+    desc: 'One row per game session. Game_ID is IDENTITY — cannot be manually set. Links a User to a CallList for a specific event.',
+    cols: [
+      { tag:'pk',  name:'Game_ID',            type:'INT IDENTITY' },
+      { tag:'fk',  name:'User_ID',            type:'INT → Users' },
+      { tag:'fk',  name:'Call_List_ID',       type:'INT → CallList_Master' },
+      { tag:'col', name:'Game_Number',        type:'TINYINT' },
+      { tag:'col', name:'Game_Inning',        type:'INT' },
+      { tag:'col', name:'Game_Name',          type:'VARCHAR' },
+      { tag:'col', name:'Game_Status',        type:'VARCHAR' },
+      { tag:'col', name:'Game_WinPattern',    type:'VARCHAR' },
+      { tag:'col', name:'Game_WinnerCard_ID', type:'INT' },
+      { tag:'col', name:'Game_StartTime',     type:'DATETIME2' },
+      { tag:'col', name:'Game_EndTime',       type:'DATETIME2' },
+    ]
+  },
+  cards: {
+    title: 'Cards', color: '#f59e0b',
+    desc: 'One row per bingo card. 24 Sq_ columns hold song_id references from CallList_Songs. PIDT is stamped after packet generation. Sq_N3 is always NULL (FREE SPACE).',
+    cols: [
+      { tag:'pk',  name:'Card_ID',          type:'INT IDENTITY' },
+      { tag:'fk',  name:'User_ID',          type:'INT → Users' },
+      { tag:'fk',  name:'Game_ID',          type:'INT → Game' },
+      { tag:'fk',  name:'Call_List_ID',     type:'INT → CallList_Master' },
+      { tag:'col', name:'Inning',           type:'INT' },
+      { tag:'fk',  name:'PIDT',             type:'INT → PacketID_Master' },
+      { tag:'col', name:'Card_IsWinner',    type:'BIT' },
+      { tag:'col', name:'Card_SeedKey',     type:'VARCHAR(64)' },
+      { tag:'col', name:'Sq_B1…Sq_O5',     type:'INT (song_id refs)' },
+      { tag:'col', name:'Sq_*_Called',      type:'BIT (25 flags)' },
+      { tag:'col', name:'Card_PlayerName',  type:'VARCHAR' },
+      { tag:'col', name:'Card_PlayerEmail', type:'VARCHAR' },
+      { tag:'col', name:'PlayCount',        type:'INT' },
+      { tag:'col', name:'Card_PrintedAt',   type:'DATETIME2' },
+    ]
+  },
+  pm: {
+    title: 'PacketID_Master', color: '#8b5cf6',
+    desc: 'One row per packet. PIDT is the unique token linking master to detail and back to Cards. FML: each packet groups 1 card per inning (3 cards per packet, 50 packets total).',
+    cols: [
+      { tag:'pk',  name:'PM_ID',        type:'INT IDENTITY' },
+      { tag:'uq',  name:'PIDT',         type:'INT (unique token)' },
+      { tag:'col', name:'Game_ID',      type:'INT' },
+      { tag:'col', name:'Call_List_ID', type:'INT' },
+      { tag:'col', name:'Inning',       type:'INT' },
+      { tag:'col', name:'User_ID',      type:'INT' },
+      { tag:'fk',  name:'GPTypeID',     type:'INT → GameProdType' },
+      { tag:'col', name:'Comment',      type:'NVARCHAR(500)' },
+      { tag:'col', name:'DateTimeStamp / Updated', type:'DATETIME' },
+    ]
+  },
+  pd: {
+    title: 'PacketID_Detail', color: '#7c3aed',
+    desc: 'One row per card in a packet. PIDT FK links to master; Card_ID FK links back to Cards. FML: 3 rows per PIDT (one card per inning).',
+    cols: [
+      { tag:'pk',  name:'PD_ID',    type:'INT IDENTITY' },
+      { tag:'fk',  name:'PIDT',     type:'INT → PacketID_Master' },
+      { tag:'fk',  name:'Card_ID',  type:'INT → Cards' },
+      { tag:'col', name:'Status',   type:'Active/Inactive/Voided' },
+      { tag:'col', name:'Winner',   type:'BIT' },
+      { tag:'col', name:'DateTimeStamp / Updated', type:'DATETIME' },
+    ]
+  },
+  gpt: {
+    title: 'GameProdType', color: '#475569',
+    desc: 'Lookup table classifying packet/product type. FML = Family Game, PRO = Pro M DJ, ETS = Etsy Game Cards. Default on PacketID_Master is ETS (3).',
+    cols: [
+      { tag:'pk',  name:'GPTypeID',      type:'INT IDENTITY' },
+      { tag:'uq',  name:'GPCode',        type:'VARCHAR(3)' },
+      { tag:'col', name:'GPDescription', type:'VARCHAR(100)' },
+      { tag:'col', name:'1 = FML',       type:'Family Game Type' },
+      { tag:'col', name:'2 = PRO',       type:'Pro M DJ' },
+      { tag:'col', name:'3 = ETS',       type:'ETSY Game Cards' },
+    ]
+  }
+};
+
+function showInfo(key) {
+  const t = tables[key];
+  if (!t) return;
+
+  document.getElementById('ip-title').textContent = t.title;
+
+  const badge = document.getElementById('ip-badge');
+  badge.textContent = t.title;
+  badge.style.background = t.color + '33';
+  badge.style.color = t.color;
+
+  document.getElementById('ip-desc').textContent = t.desc;
+
+  document.getElementById('ip-cols').innerHTML = t.cols.map(c => `
+    <div class="col-row">
+      <span class="tag ${c.tag}">${c.tag.toUpperCase()}</span>
+      <span class="col-name">${c.name}</span>
+      <span class="col-type">${c.type}</span>
+    </div>
+  `).join('');
+
+  document.querySelectorAll('.tbl-card').forEach(el => el.classList.remove('active'));
+  const node = document.getElementById('node-' + key);
+  if (node) node.classList.add('active');
+}
+</script>
+</body>
+</html>

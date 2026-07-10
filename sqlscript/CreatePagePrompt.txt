@@ -1,0 +1,8 @@
+Ok... lets create a page. the page  will be called 'CreateCallList.component' , it will have 4 panels , 
+Panel 1 will be accross the top, panel 2 and 3 and 4 will below it side by side. 
+The names will be CLPanel1 and CLPanel2 and CLPanel3 and CLPanel4, 
+in CLPanel1 will be a textbox that will have Game_ID and an Info Box, 
+in CLPanel2 will have the Create New CallList and will all the fields will be represented to fill in, and have a button to call the 'Create_CallList_Master' . 
+in CLPanel3 will be all the available songs from the 'https://api.getgogi.com/api/Bingo/Bingo/Get_All_Songs' rest api call. There will be a search field to search thru the artist or song name to narrow the list. 
+Each song will have an 'Add" button that will add the song to 
+CLPanel4. Every time the Add Song button is clicked the song will apear in CLPanel4 list box. 

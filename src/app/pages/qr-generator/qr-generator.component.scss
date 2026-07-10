@@ -1,0 +1,119 @@
+.qr-generator-page {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 2rem;
+}
+
+.qr-generator-page__header,
+.qr-generator-page__form,
+.qr-generator-page__preview {
+  padding: 1.25rem 1.35rem;
+}
+
+.qr-generator-page__eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.qr-generator-page__header h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.65rem;
+}
+
+.qr-generator-page__copy {
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.qr-generator-page__form {
+  display: grid;
+  gap: 1rem;
+}
+
+.qr-generator-page__field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.qr-generator-page__field span {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.qr-generator-page__input,
+.qr-generator-page__select {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border-soft);
+  border-radius: 0.5rem;
+  background: var(--panel-muted);
+  color: var(--text-primary);
+  font: inherit;
+}
+
+.qr-generator-page__button {
+  justify-self: start;
+  padding: 0.65rem 1.1rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--gradient-brand);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.qr-generator-page__button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.qr-generator-page__button--secondary {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+}
+
+.qr-generator-page__error {
+  margin: 0;
+  color: var(--danger);
+  font-size: 0.9rem;
+}
+
+.qr-generator-page__preview h2 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+}
+
+.qr-generator-page__placeholder {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.qr-generator-page__result {
+  display: grid;
+  gap: 0.85rem;
+  justify-items: start;
+}
+
+.qr-generator-page__image {
+  width: min(100%, 18rem);
+  height: auto;
+  padding: 0.75rem;
+  border: 1px solid var(--border-soft);
+  border-radius: 0.5rem;
+  background: #fff;
+}
+
+.qr-generator-page__meta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}

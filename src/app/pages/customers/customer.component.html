@@ -1,0 +1,42 @@
+<div class="customer-list">
+  <h2>Customer List</h2>
+  <div *ngIf="loading">Loading...</div>
+  <div *ngIf="error">{{ error }}</div>
+  <div class="master-detail-grid" *ngIf="!loading && !error">
+    <div class="master">
+      <table>
+        <thead>
+          <tr>
+            <th>UserId</th>
+            <th>UserAlias</th>
+            <th>DisplayName</th>
+            <th>Email</th>
+            <th>IsActive</th>
+            <th>FirstName</th>
+            <th>LastName</th>
+            <th>Zip</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let customer of customers" [class.selected]="customer === selectedCustomer">
+            <td>{{ customer.UserId }}</td>
+            <td>{{ customer.UserAlias }}</td>
+            <td>{{ customer.DisplayName }}</td>
+            <td>{{ customer.EmailAddress }}</td>
+            <td>{{ customer.IsActive ? 'Yes' : 'No' }}</td>
+            <td>{{ customer.FirstName }}</td>
+            <td>{{ customer.LastName }}</td>
+            <td>{{ customer.Zip }}</td>
+            <td>
+              <button type="button" (click)="selectCustomer(customer); $event.stopPropagation();">View Details</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="detail">
+      <app-custdetail [customer]="selectedCustomer"></app-custdetail>
+    </div>
+  </div>
+</div>

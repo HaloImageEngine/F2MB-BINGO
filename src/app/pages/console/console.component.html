@@ -1,0 +1,637 @@
+<div class="console-container">
+
+  <!-- Header -->
+  <header class="console-header">
+    <a routerLink="/" class="back-link">&larr; Back</a>
+    <div class="console-header__title-block">
+      <h1>Family Master Console</h1>
+      <div>GameID {{ gameId() }}</div>
+    </div>
+    <label class="active-game-field active-game-field--header">
+      <span class="game-id-label">ActiveGame</span>
+      <select
+        [ngModel]="activeGame()"
+        (ngModelChange)="updateActiveGame($event)"
+        class="filter-select active-game-select"
+        aria-label="Active game refresh"
+      >
+        <option [ngValue]="true">True</option>
+        <option [ngValue]="false">False</option>
+      </select>
+      <small class="active-game-field__meta">
+        {{ activeGame() ? 'Until ' + activeGameExpiresAt() : 'Disabled' }}
+      </small>
+    </label>
+    <div class="console-header__trailing">
+      <div class="game-badge" [class]="gameStatus()">
+        {{ gameStatus() | uppercase }}
+      </div>
+      <div class="console-header__auth">
+        @if (isAuthenticated()) {
+          <div class="console-header__auth-user">
+            <button type="button" class="auth-btn auth-btn--logout" (click)="logout()">Logout</button>
+            @if (currentUser(); as user) {
+              <span class="console-header__user-alias">{{ user.UserAlias }}</span>
+            }
+          </div>
+        } @else {
+          <a routerLink="/login" class="auth-btn auth-btn--login">Login</a>
+        }
+      </div>
+    </div>
+  </header>
+
+  <section class="console-max-ids" aria-label="Maximum IDs">
+    <div class="console-max-ids__stat">
+      <span class="console-max-ids__value">{{ maxIdsLoading() && maxGameId() === null ? '…' : (maxGameId() ?? '—') }}</span>
+      <span class="console-max-ids__label">Max Game ID</span>
+    </div>
+    <div class="console-max-ids__stat">
+      <span class="console-max-ids__value">{{ maxIdsLoading() && maxCallListId() === null ? '…' : (maxCallListId() ?? '—') }}</span>
+      <span class="console-max-ids__label">Max CallList ID</span>
+    </div>
+    <div class="console-max-ids__stat console-max-ids__stat--starting-game">
+      <span class="console-max-ids__label">Starting Game</span>
+      <select
+        class="filter-select console-max-ids__control"
+        [ngModel]="gameId()"
+        (ngModelChange)="updateStartingGame($event)"
+        aria-label="Starting Game"
+      >
+        @for (game of startingGameOptions(); track game) {
+          <option [ngValue]="game">{{ game }}</option>
+        }
+      </select>
+    </div>
+  </section>
+
+  <nav class="console-quick-nav" aria-label="Bingo tools">
+    <a routerLink="/card-overview" class="console-quick-nav__link">Card Overview</a>
+    <a routerLink="/console/card-master" class="console-quick-nav__link">Card Master</a>
+    <a routerLink="/console/game-master" class="console-quick-nav__link">Game Master</a>
+    <a routerLink="/slidecards" class="console-quick-nav__link">Slide Cards</a>
+    <a routerLink="/topslidecards" class="console-quick-nav__link">Top Slide Cards</a>
+    <a routerLink="/console/clsong-review" class="console-quick-nav__link">CL Song Review</a>
+  </nav>
+
+  <!-- Game Controls -->
+  <section class="game-controls">
+    <div class="control-row">
+      <label class="game-id-field">
+        <span class="game-id-label">Game ID</span>
+        <input
+          type="number"
+          min="1"
+          max="999"
+          step="1"
+          [ngModel]="gameIdDraft()"
+          (ngModelChange)="onGameIdDraftInput($event)"
+          (blur)="commitGameIdFromDraft()"
+          (keydown.enter)="commitGameIdFromDraft(); $event.preventDefault()"
+          class="filter-input game-id-input"
+          aria-label="GameID"
+        />
+      </label>
+      <label class="game-id-field">
+        <span class="game-id-label">Call List ID</span>
+        <select
+          [ngModel]="callListId()"
+          (ngModelChange)="updateCallListId($event)"
+          class="filter-select game-id-input"
+          aria-label="Call List ID"
+          [disabled]="!callListDropdownReady() || callListIdSelectOptions().length === 0">
+          @if (!callListDropdownReady()) {
+            <option [ngValue]="null" disabled>Loading call lists…</option>
+          } @else if (callListIdSelectOptions().length === 0) {
+            <option [ngValue]="null" disabled>No call lists for User_ID {{ currentUser()?.UserId ?? '—' }}</option>
+          } @else {
+            @for (id of callListIdSelectOptions(); track id) {
+              <option [ngValue]="id">{{ id }}</option>
+            }
+          }
+        </select>
+      </label>
+      <label class="game-id-field game-id-field--inning">
+        <span class="game-id-label">Inning</span>
+        <select
+          [ngModel]="inning()"
+          (ngModelChange)="updateInning($event)"
+          class="filter-select game-id-input game-id-input--inning"
+          aria-label="Inning">
+          <option [ngValue]="1">1</option>
+          <option [ngValue]="2">2</option>
+          <option [ngValue]="3">3</option>
+          <option [ngValue]="4">4</option>
+        </select>
+      </label>
+      @if (gameStatus() === 'idle' || gameStatus() === 'finished') {
+        <button class="ctrl-btn start" (click)="startGame()" [disabled]="playlistLoading() || playlist().length === 0">
+          Start Game
+        </button>
+      }
+      <button class="ctrl-btn reset" (click)="clearCards()" [disabled]="gameActionLoading()">
+        Clear Cards
+      </button>
+      <button class="ctrl-btn reset" (click)="clearCalled()" [disabled]="gameActionLoading()">
+        Clear Called
+      </button>
+      <button class="ctrl-btn reset" (click)="getTopCards()" [disabled]="gameActionLoading()">
+        Get Top Cards
+      </button>
+      <button class="ctrl-btn reset" (click)="getCalledSongs()" [disabled]="gameActionLoading()">
+        Get Called Songs
+      </button>
+      @if (gameStatus() === 'active') {
+        <button class="ctrl-btn call" (click)="callNextSong()">
+          Call Next Song
+        </button>
+        <button class="ctrl-btn pause" (click)="pauseGame()">Pause</button>
+        <button class="ctrl-btn end" (click)="endGame()">End Game</button>
+      }
+      @if (gameStatus() === 'paused') {
+        <button class="ctrl-btn start" (click)="resumeGame()">Resume</button>
+        <button class="ctrl-btn end" (click)="endGame()">End Game</button>
+      }
+      @if (gameStatus() !== 'idle') {
+        <button class="ctrl-btn reset" (click)="resetGame()">Reset</button>
+      }
+      <div
+        class="control-message"
+        [class.control-message--error]="!!gameActionError()"
+        [class.control-message--success]="!gameActionError() && !!gameActionMessage()"
+      >
+        {{ gameActionError() || gameActionMessage() || '' }}
+      </div>
+    </div>
+    <div class="stats-row">
+      <section class="now-playing" [class.now-playing--empty]="!currentSong()">
+        <span class="now-playing-label">Now Playing</span>
+        @if (currentSong(); as song) {
+          <span class="now-playing-main">
+            <span class="now-playing-title" [title]="song.title">{{ song.title }}</span>
+            <span class="now-playing-artist" [title]="song.artist">{{ song.artist }}</span>
+          </span>
+        } @else {
+          <span class="now-playing-idle">—</span>
+        }
+      </section>
+      <div class="stat-card">
+        <div class="stat-value">{{ playlistCountDisplay() }}</div>
+        <div class="stat-label">In Playlist</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ calledCountDisplay() }}</div>
+        <div class="stat-label">{{ gciStatsForContext() ? 'Called' : (playlist().length ? 'Called (list)' : 'Called') }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ remainingCountDisplay() }}</div>
+        <div class="stat-label">Remaining</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value">{{ roundNumber() }}</div>
+        <div class="stat-label">Inning</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main panels -->
+  <div class="panels">
+
+    <!-- Called Songs History -->
+    <section class="panel history-panel">
+      <h2>Called Songs</h2>
+
+      <!-- Call Song Controls -->
+      <div class="call-song-controls">
+        <label class="call-song-field">
+          <span class="call-song-label">Game ID</span>
+          <input
+            type="number"
+            min="1"
+            [ngModel]="gameId()"
+            class="filter-input call-id-input"
+            aria-label="GameID"
+            readonly
+          />
+        </label>
+        <label class="call-song-field">
+          <span class="call-song-label">Call List ID</span>
+          <select
+            [ngModel]="callListId()"
+            (ngModelChange)="updateCallListId($event)"
+            class="filter-select game-id-input"
+            aria-label="Call List ID"
+            [disabled]="!callListDropdownReady() || callListIdSelectOptions().length === 0">
+            @if (!callListDropdownReady()) {
+              <option [ngValue]="null" disabled>Loading call lists…</option>
+            } @else if (callListIdSelectOptions().length === 0) {
+              <option [ngValue]="null" disabled>No call lists for User_ID {{ currentUser()?.UserId ?? '—' }}</option>
+            } @else {
+              @for (id of callListIdSelectOptions(); track id) {
+                <option [ngValue]="id">{{ id }}</option>
+              }
+            }
+          </select>
+        </label>
+        <label class="call-song-field call-song-field--inning">
+          <span class="call-song-label">Inning</span>
+          <select
+            [ngModel]="inning()"
+            (ngModelChange)="updateInning($event)"
+            class="filter-select call-id-input call-id-input--inning"
+            aria-label="Inning">
+            <option [ngValue]="1">1</option>
+            <option [ngValue]="2">2</option>
+            <option [ngValue]="3">3</option>
+            <option [ngValue]="4">4</option>
+          </select>
+        </label>
+        <label class="call-song-field">
+          <span class="call-song-label">Song ID</span>
+          <input
+            type="number"
+            min="1"
+            [ngModel]="manualSongIdDraft()"
+            (ngModelChange)="onManualSongIdDraftInput($event)"
+            (blur)="commitManualSongIdFromDraft()"
+            (keydown.enter)="commitManualSongIdFromDraft(); $event.preventDefault()"
+            class="filter-input call-id-input"
+            placeholder="Song ID"
+            aria-label="Song ID"
+          />
+        </label>
+        <button
+          class="ctrl-btn call"
+          (click)="callSongManual()"
+          [disabled]="callSongLoading() || !manualSongId()"
+        >
+          {{ callSongLoading() ? 'Calling…' : 'Call' }}
+        </button>
+        @if (callSongNotice()) {
+          <span class="call-song-notice">{{ callSongNotice() }}</span>
+        }
+        @if (callSongError()) {
+          <span class="call-song-error">{{ callSongError() }}</span>
+        }
+      </div>
+
+      <div class="winner-check-group" role="group" aria-label="Bingo winner check rule">
+        <div class="winner-check-group__title">
+          Winner check — only <strong>{{ activeWinnerCheckEndpoint() }}</strong> runs after each song call
+        </div>
+        <div class="winner-check-options">
+          <label
+            class="winner-check-option"
+            [class.winner-check-option--selected]="winnerCheckMode() === 'standard'"
+          >
+            <input
+              type="checkbox"
+              class="winner-check-option__input"
+              [checked]="winnerCheckMode() === 'standard'"
+              (click)="selectWinnerCheckMode('standard', $event)"
+              (keydown.space)="selectWinnerCheckMode('standard', $event)"
+            />
+            <span class="winner-check-option__name">Check_ForWinner</span>
+          </label>
+          <label
+            class="winner-check-option"
+            [class.winner-check-option--selected]="winnerCheckMode() === 'twoLines'"
+          >
+            <input
+              type="checkbox"
+              class="winner-check-option__input"
+              [checked]="winnerCheckMode() === 'twoLines'"
+              (click)="selectWinnerCheckMode('twoLines', $event)"
+              (keydown.space)="selectWinnerCheckMode('twoLines', $event)"
+            />
+            <span class="winner-check-option__name">Check_ForWinner_2Lines</span>
+          </label>
+          <label
+            class="winner-check-option"
+            [class.winner-check-option--selected]="winnerCheckMode() === 'fourCorners'"
+          >
+            <input
+              type="checkbox"
+              class="winner-check-option__input"
+              [checked]="winnerCheckMode() === 'fourCorners'"
+              (click)="selectWinnerCheckMode('fourCorners', $event)"
+              (keydown.space)="selectWinnerCheckMode('fourCorners', $event)"
+            />
+            <span class="winner-check-option__name">Check_ForWinner_4Corners</span>
+          </label>
+          <label
+            class="winner-check-option"
+            [class.winner-check-option--selected]="winnerCheckMode() === 'blackout'"
+          >
+            <input
+              type="checkbox"
+              class="winner-check-option__input"
+              [checked]="winnerCheckMode() === 'blackout'"
+              (click)="selectWinnerCheckMode('blackout', $event)"
+              (keydown.space)="selectWinnerCheckMode('blackout', $event)"
+            />
+            <span class="winner-check-option__name">Check_ForWinner_Blackout</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Bingo Alert -->
+      <div
+        class="winner-result-area"
+        role="status"
+        aria-label="Bingo alert"
+        [class.winner-result-area--bingo]="hasAnyBingoWinner()"
+        [class.winner-result-area--empty]="winnerResults().length === 0"
+      >
+        @if (hasDisplayableWinnerResults()) {
+          <section class="winner-result__table">
+            <section class="winner-result__headings" aria-hidden="true">
+              <span class="winner-result__heading">Game Id</span>
+              <span class="winner-result__heading">Call List ID</span>
+              <span class="winner-result__heading">Inning</span>
+              <span class="winner-result__heading">Winning Card</span>
+              <span class="winner-result__heading">Pattern</span>
+              <span class="winner-result__heading winner-result__heading--action"></span>
+            </section>
+            <div class="winner-result__list">
+              @for (winner of winnerResults(); track trackByWinnerRow($index, winner)) {
+                @if (isDisplayableWinner(winner)) {
+                  <section class="winner-result__row">
+                    <section class="winner-result__values">
+                      <span class="winner-result__value">{{ winner.GameID }}</span>
+                      <span class="winner-result__value">{{ winner.CallListID ?? '—' }}</span>
+                      <span class="winner-result__value">{{ winner.Inning ?? '—' }}</span>
+                      <span class="winner-result__value">{{ winner.WinningCardID ?? '—' }}</span>
+                      <span class="winner-result__value">{{ winner.WinningPattern ?? '—' }}</span>
+                      <span class="winner-result__value winner-result__value--action">
+                        @if (hasWinningCardId(winner); as winningCardId) {
+                          <a
+                            class="winner-result__card-link"
+                            [routerLink]="['/slidecardone']"
+                            [queryParams]="{ cardId: winningCardId }"
+                            [attr.aria-label]="'Open card ' + winningCardId + ' on Slide Card One'"
+                          >
+                            Winning Card
+                          </a>
+                        }
+                      </span>
+                    </section>
+                    @if (winner.Result) {
+                      <p class="winner-result__status">{{ winner.Result }}</p>
+                    }
+                  </section>
+                }
+              }
+            </div>
+          </section>
+        } @else if (winnerResults().length > 0) {
+          <p class="winner-result__status winner-result__status--solo">{{ winnerStatusMessage() }}</p>
+        } @else {
+          <span class="winner-result__placeholder">Winner check results will appear here after calling a song.</span>
+        }
+      </div>
+
+      <!-- Called Songs Table -->
+      <div class="called-songs-table-wrap">
+        <table class="called-songs-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Song ID</th>
+              <th>Title</th>
+              <th>Artist</th>
+              <th>Called at</th>
+              <th>Winner?</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (song of calledSongsForDisplay(); track $index) {
+              <tr>
+                <td class="col-num">{{ $index + 1 }}</td>
+                <td class="col-id">{{ song.song_id }}</td>
+                <td class="col-title">{{ song.title }}</td>
+                <td class="col-artist">{{ song.artist }}</td>
+                <td class="col-called-at">{{ formatCalledTimeStamp(song.calledTimeStamp) }}</td>
+                <td class="col-winner">{{ formatWinnerFlag(song.thisNumberAWinner) }}</td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6" class="empty-msg">No songs called yet.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Playlist -->
+    <section class="panel playlist-panel">
+      <div class="playlist-header">
+        <h2>Playlist</h2>
+        <div class="playlist-actions">
+          <button class="filter-btn" (click)="shufflePlaylist()" [disabled]="playlist().length === 0">Shuffle</button>
+          <button class="filter-btn danger" (click)="clearPlaylist()" [disabled]="playlist().length === 0">Clear</button>
+        </div>
+      </div>
+      <div class="playlist-context-bar" aria-label="Playlist uses this call list and inning">
+        <div class="playlist-context-item">
+          <span class="playlist-context-label">Call_List_ID</span>
+          <span class="playlist-context-value">{{ callListId() ?? '—' }}</span>
+        </div>
+        <div class="playlist-context-item">
+          <span class="playlist-context-label">Inning</span>
+          <span class="playlist-context-value">{{ inning() ?? '—' }}</span>
+        </div>
+      </div>
+      <div class="song-list">
+        @if (playlistLoading()) {
+          <div class="empty-msg">Loading playlist songs...</div>
+        } @else if (playlistError()) {
+          <div class="empty-msg">{{ playlistError() }}</div>
+        } @else {
+          @for (song of playlist(); track song.song_id; let i = $index) {
+            <div class="song-row" [class.called]="isCalled(song)" [class.current]="currentSong()?.song_id === song.song_id">
+              <span class="song-index">{{ i + 1 }}</span>
+              <div class="song-info">
+                <span class="song-title">{{ song.title }}</span>
+                <span class="song-artist">{{ song.artist }}</span>
+                <span class="song-meta-small">
+                  <span class="song-meta-id">{{ song.song_id }}</span>
+                  <span class="song-meta-small__separator">|</span>
+                  {{ song.genre || 'Unknown Genre' }}
+                  <span class="song-meta-small__separator">|</span>
+                  {{ song.era || 'Unknown Era' }}
+                  <span class="song-meta-small__separator">|</span>
+                  {{ song.decade || 'Unknown Decade' }}
+                </span>
+              </div>
+              <div class="song-actions">
+                <button
+                  class="action-btn call"
+                  (click)="callSpecificSong(song)"
+                  [disabled]="isCalled(song) || callSongLoading()"
+                  [title]="isCalled(song) ? 'Song already called' : 'Call this song'"
+                >
+                  {{ isCalled(song) ? 'Called' : 'Call' }}
+                </button>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-msg">Enter Game ID, Call List ID, and Inning to load playlist songs.</div>
+          }
+        }
+      </div>
+    </section>
+
+    <!-- Top Cards -->
+    <section class="panel top-cards-panel">
+      <h2>Top Cards</h2>
+      <div class="call-song-controls top-cards-controls" aria-label="Top cards use this call list and inning">
+        <label class="call-song-field">
+          <span class="call-song-label">Call List ID</span>
+          <select
+            [ngModel]="callListId()"
+            (ngModelChange)="updateCallListId($event)"
+            class="filter-select game-id-input"
+            aria-label="Call List ID"
+            [disabled]="!callListDropdownReady() || callListIdSelectOptions().length === 0">
+            @if (!callListDropdownReady()) {
+              <option [ngValue]="null" disabled>Loading call lists…</option>
+            } @else if (callListIdSelectOptions().length === 0) {
+              <option [ngValue]="null" disabled>No call lists for User_ID {{ currentUser()?.UserId ?? '—' }}</option>
+            } @else {
+              @for (id of callListIdSelectOptions(); track id) {
+                <option [ngValue]="id">{{ id }}</option>
+              }
+            }
+          </select>
+        </label>
+        <label class="call-song-field call-song-field--inning">
+          <span class="call-song-label">Inning</span>
+          <select
+            [ngModel]="inning()"
+            (ngModelChange)="updateInning($event)"
+            class="filter-select call-id-input call-id-input--inning"
+            aria-label="Inning">
+            <option [ngValue]="1">1</option>
+            <option [ngValue]="2">2</option>
+            <option [ngValue]="3">3</option>
+            <option [ngValue]="4">4</option>
+          </select>
+        </label>
+      </div>
+      <div class="song-list">
+        @for (card of topCards(); track card.CardID; let i = $index) {
+          <a
+            class="song-row history-row top-card-row"
+            [routerLink]="['/slidecardone']"
+            [queryParams]="{ cardId: card.CardID }"
+            [attr.aria-label]="'Open card ' + card.CardID + ' on Slide Card One'"
+          >
+            <span class="song-index">#{{ card.CardRank ?? (i + 1) }}</span>
+            <div class="song-info">
+              <span class="song-title">Card {{ card.CardID }}</span>
+              <span class="song-artist">
+                {{ card.CalledCount }} called
+                @if (card.GameName) {
+                  · {{ card.GameName }}
+                }
+                @if (card.CardIsWinner) {
+                  · Winner
+                }
+              </span>
+            </div>
+            <span class="tag time">{{ card.CalledCount }}</span>
+          </a>
+        } @empty {
+          <div class="empty-msg">No Cards Yet</div>
+        }
+      </div>
+    </section>
+
+  </div>
+
+  <section class="console-winners" aria-label="Saved call list winners">
+    <header class="console-winners__header">
+      <div class="console-winners__title-block">
+        <h2>Call List Winners</h2>
+        <p class="console-winners__meta">
+          User ID {{ currentUser()?.UserId ?? '—' }} · Game ID {{ gameId() }}
+        </p>
+      </div>
+      <button
+        type="button"
+        class="filter-btn"
+        (click)="loadCallListWinners()"
+        [disabled]="callListWinnersLoading()"
+      >
+        {{ callListWinnersLoading() ? 'Loading…' : 'Refresh' }}
+      </button>
+    </header>
+
+    @if (callListWinnersError(); as winnersErr) {
+      <p class="console-winners__message console-winners__message--error">{{ winnersErr }}</p>
+    }
+
+    @if (callListWinnersLoading() && callListWinners().length === 0) {
+      <p class="console-winners__message">Loading winners…</p>
+    } @else if (callListWinners().length === 0) {
+      <p class="console-winners__message console-winners__message--empty">
+        No saved winners for this user and game.
+      </p>
+    } @else {
+      <div class="console-winners__table-wrap">
+        <table class="console-winners__table">
+          <thead>
+            <tr>
+              <th>Call List</th>
+              <th>Name</th>
+              <th>Inning</th>
+              <th>Game</th>
+              <th>Status</th>
+              <th>Card</th>
+              <th>Pattern</th>
+              <th>Songs</th>
+              <th>Created</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (winner of callListWinners(); track trackByCallListWinnerRow($index, winner)) {
+              <tr>
+                <td>{{ winner.Call_List_ID }}</td>
+                <td [title]="winner.Call_List_Name ?? ''">{{ winner.Call_List_Name ?? '—' }}</td>
+                <td>{{ winner.Inning }}</td>
+                <td>
+                  @if (winner.Game_Number !== null) {
+                    #{{ winner.Game_Number }}
+                  }
+                  @if (winner.Game_Name) {
+                    {{ winner.Game_Name }}
+                  } @else if (winner.Game_Number === null) {
+                    —
+                  }
+                </td>
+                <td>{{ winner.Game_Status ?? '—' }}</td>
+                <td>{{ winner.Card_ID }}</td>
+                <td>{{ winner.Call_List_WinningPatter ?? '—' }}</td>
+                <td>{{ winner.NumofSongsCalled ?? '—' }}</td>
+                <td>{{ winner.Call_List_CreatedAt ? (winner.Call_List_CreatedAt | date: 'short') : '—' }}</td>
+                <td>
+                  @if (winner.Card_ID > 0) {
+                    <a
+                      class="winner-result__card-link"
+                      [routerLink]="['/slidecardone']"
+                      [queryParams]="{ cardId: winner.Card_ID }"
+                      [attr.aria-label]="'Open card ' + winner.Card_ID + ' on Slide Card One'"
+                    >
+                      Winning Card
+                    </a>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</div>

@@ -1,0 +1,25 @@
+{
+  "QRID": 0,
+  "Title": "DJ Gogi",
+  "URL": "http://djgoig.com",
+  "EnterDate": "2026-05-29T22:46:25.977Z",
+  "ActiveStartDate": "2026-05-29T22:46:25.977Z",
+  "ActiveEndDate": "2026-05-29T22:46:25.977Z",
+  "Contact": "DJ Gogi",
+  "Phone": "972-983-1919",
+  "ContactURL": "djgogi@gmail.com",
+  "AdPosition": "AD1"
+}
+
+{
+  "QRID": 0,
+  "Title": "HillTop Truck Park",
+  "URL": "https://www.hilltoptruckpark.com/",
+  "EnterDate": "2026-05-29T22:46:25.977Z",
+  "ActiveStartDate": "2026-05-29T22:46:25.977Z",
+  "ActiveEndDate": "2026-05-29T22:46:25.977Z",
+  "Contact": "Trooper",
+  "Phone": "972-983-1919",
+  "ContactURL": "https://www.hilltoptruckpark.com",
+  "AdPosition": "AD2"
+}

@@ -1,0 +1,122 @@
+.bingo-page {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.bingo-page__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.bingo-page__eyebrow {
+  margin: 0 0 0.35rem;
+  color: var(--accent-amber);
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.bingo-page__header h1 {
+  margin: 0;
+  font-size: clamp(2rem, 3vw, 2.75rem);
+}
+
+.bingo-page__copy {
+  margin: 0.45rem 0 0;
+  max-width: 36rem;
+  color: var(--text-muted);
+}
+
+.bingo-card {
+  padding: 1.25rem;
+}
+
+.bingo-card__grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.bingo-slot {
+  position: relative;
+  min-height: 8.5rem;
+  padding: 1rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 1rem;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02)),
+    var(--panel-muted);
+  overflow: hidden;
+}
+
+.bingo-slot::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(29, 211, 176, 0.16), transparent 45%);
+  pointer-events: none;
+}
+
+.bingo-slot__position {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: rgba(5, 9, 18, 0.45);
+  border: 1px solid var(--border-soft);
+  color: var(--accent-teal);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.bingo-slot__content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  height: calc(100% - 2.4rem);
+  margin-top: 0.85rem;
+}
+
+.bingo-slot__content--empty {
+  opacity: 0.9;
+}
+
+.bingo-slot__title,
+.bingo-slot__artist {
+  margin: 0;
+}
+
+.bingo-slot__title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.bingo-slot__artist {
+  margin-top: 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 960px) {
+  .bingo-card__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .bingo-card__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .bingo-slot {
+    min-height: 7.5rem;
+  }
+}

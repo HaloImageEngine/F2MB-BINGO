@@ -1,0 +1,45 @@
+<section class="page settings">
+	<header class="page__header">
+		<span class="tag accent-rose">Settings</span>
+		<h2>Automation + access</h2>
+		<p>Fine tune workflows and control who can steer ThaiOrange systems.</p>
+	</header>
+
+	<div class="grid">
+		<article class="surface-card">
+			<header>
+				<p class="eyebrow">Automation</p>
+				<h3>Rules + alerts</h3>
+			</header>
+			<ul class="rule-list">
+				<li *ngFor="let rule of automationRules">
+					<div>
+						<p class="rule__title">{{ rule.title }}</p>
+						<p class="rule__detail">{{ rule.detail }}</p>
+					</div>
+					<button type="button" class="toggle" [class.toggle--on]="rule.enabled">
+						<span>{{ rule.enabled ? 'On' : 'Off' }}</span>
+					</button>
+				</li>
+			</ul>
+		</article>
+
+		<article class="surface-card">
+			<header>
+				<p class="eyebrow">Team</p>
+				<h3>Access overview</h3>
+			</header>
+			<ul class="access-list">
+				<li *ngFor="let member of accessList">
+					<div>
+						<p class="access__name">{{ member.name }}</p>
+						<p class="access__role">{{ member.role }}</p>
+						<p class="access__scope">{{ member.scope }}</p>
+					</div>
+					<button type="button" class="ghost small">Edit</button>
+				</li>
+			</ul>
+			<button type="button" class="primary full">Invite teammate</button>
+		</article>
+	</div>
+</section>

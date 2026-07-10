@@ -1,0 +1,390 @@
+<section class="card-overview-page">
+  <header class="card-overview-page__header">
+    <a routerLink="/console" class="card-overview-page__back">&larr; Back to Console</a>
+    <nav class="card-overview-page__nav" aria-label="Related pages">
+      <a routerLink="/console" class="card-overview-page__nav-link">Console</a>
+      <a routerLink="/card-overview" routerLinkActive="is-active" [routerLinkActiveOptions]="{ exact: true }" class="card-overview-page__nav-link">Card Overview</a>
+      <a routerLink="/console/card-master" class="card-overview-page__nav-link">Card Master</a>
+      <a routerLink="/console/game-master" class="card-overview-page__nav-link">Game Master</a>
+      <a routerLink="/slidecards" class="card-overview-page__nav-link">Slide Cards</a>
+    </nav>
+    <h1>Card Overview</h1>
+    <p class="card-overview-page__copy">
+      Existing cards by user, <code>Check/Check_GameSetup</code> by game, and <code>Bingo/Check_Cards_byUser_ID</code>.
+    </p>
+  </header>
+
+  <section class="card-overview-controls surface-card">
+    <label class="card-overview-field">
+      <span>User_ID</span>
+      <input
+        type="number"
+        min="1"
+        step="1"
+        [ngModel]="userIdDraft()"
+        (ngModelChange)="onUserIdDraftInput($event)"
+        (blur)="commitUserIdFromDraft()"
+        (keydown.enter)="commitUserIdFromDraft(); $event.preventDefault()"
+        aria-label="User ID" />
+    </label>
+    <label class="card-overview-field">
+      <span>Game_ID</span>
+      <input
+        type="number"
+        min="1"
+        step="1"
+        [ngModel]="gameIdDraft()"
+        (ngModelChange)="onGameIdDraftInput($event)"
+        (blur)="commitGameIdFromDraft()"
+        (keydown.enter)="commitGameIdFromDraft(); $event.preventDefault()"
+        aria-label="Game ID" />
+    </label>
+    <label class="card-overview-field">
+      <span>Call_List_ID</span>
+      <app-call-list-id-field
+        [value]="callListIdInput()"
+        (valueChange)="setCallListIdFromInput($event)"
+        [userId]="userIdInput()"
+        placeholder="Optional"
+        emptyLabel="Optional"
+        ariaLabel="Call List ID" />
+    </label>
+    <label class="card-overview-field">
+      <span>Inning</span>
+      <input
+        type="number"
+        min="1"
+        step="1"
+        [ngModel]="inningDraft()"
+        (ngModelChange)="onInningDraftInput($event)"
+        (blur)="commitInningFromDraft()"
+        (keydown.enter)="commitInningFromDraft(); $event.preventDefault()"
+        aria-label="Inning" />
+    </label>
+    <button
+      type="button"
+      class="card-overview-btn card-overview-btn--primary"
+      (click)="load()"
+      [disabled]="loading()">
+      {{ loading() ? 'Loading…' : 'Load overview' }}
+    </button>
+  </section>
+
+  <p class="card-overview-message card-overview-message--error" *ngIf="error() as err">{{ err }}</p>
+  <p class="card-overview-message card-overview-message--error" *ngIf="gameSetupError() as setupErr">{{ setupErr }}</p>
+  <p class="card-overview-message card-overview-message--error" *ngIf="checkCardsError() as checkErr">{{ checkErr }}</p>
+
+  @if (hasLoaded()) {
+    @if (!error() && data()) {
+    <section class="card-overview-panel surface-card" aria-labelledby="card-overview-data-heading">
+      <header class="card-overview-panel__head">
+        <h2 id="card-overview-data-heading">Existing cards data</h2>
+        <span class="card-overview-panel__badge" *ngIf="summary() as s">{{ s.Total_Cards }} card(s)</span>
+      </header>
+
+      @if (summary(); as s) {
+        <dl class="card-overview-summary">
+          <div><dt>User_ID</dt><dd>{{ s.User_ID }}</dd></div>
+          <div><dt>Total_Cards</dt><dd>{{ s.Total_Cards }}</dd></div>
+          <div><dt>Total_CallLists</dt><dd>{{ s.Total_CallLists }}</dd></div>
+          <div><dt>Total_Innings</dt><dd>{{ s.Total_Innings }}</dd></div>
+          <div><dt>Total_Winners</dt><dd>{{ s.Total_Winners }}</dd></div>
+          <div><dt>Total_NonWinners</dt><dd>{{ s.Total_NonWinners }}</dd></div>
+          <div><dt>Win_Rate_Pct</dt><dd>{{ formatPct(s.Win_Rate_Pct) }}</dd></div>
+          <div><dt>Total_Printed</dt><dd>{{ s.Total_Printed }}</dd></div>
+          <div><dt>Print_Rate_Pct</dt><dd>{{ formatPct(s.Print_Rate_Pct) }}</dd></div>
+          <div><dt>Total_Named_Players</dt><dd>{{ s.Total_Named_Players }}</dd></div>
+          <div><dt>Total_PlayCount</dt><dd>{{ s.Total_PlayCount }}</dd></div>
+          <div><dt>Avg_PlayCount</dt><dd>{{ s.Avg_PlayCount }}</dd></div>
+          <div><dt>Max_PlayCount</dt><dd>{{ s.Max_PlayCount }}</dd></div>
+          <div><dt>First_Card_Created</dt><dd>{{ formatDate(s.First_Card_Created) }}</dd></div>
+          <div><dt>Last_Card_Created</dt><dd>{{ formatDate(s.Last_Card_Created) }}</dd></div>
+          <div><dt>Last_Printed</dt><dd>{{ formatDate(s.Last_Printed) }}</dd></div>
+        </dl>
+      }
+
+      @if (inningList().length > 0) {
+        <p class="card-overview-inning-list">
+          <span class="card-overview-inning-list__label">InningList</span>
+          {{ inningList().join(', ') }}
+        </p>
+      }
+
+      @if (inningBreakdown().length > 0) {
+        <div class="card-overview-table-wrap">
+          <h3>Inning breakdown</h3>
+          <table class="card-overview-table">
+            <thead>
+              <tr>
+                <th>Inning</th>
+                <th>Cards</th>
+                <th>Winners</th>
+                <th>Non-winners</th>
+                <th>Win %</th>
+                <th>Printed</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of inningBreakdown(); track trackByInning($index, row)) {
+                <tr>
+                  <td>{{ row.Inning }}</td>
+                  <td>{{ row.Card_Count }}</td>
+                  <td>{{ row.Winner_Count }}</td>
+                  <td>{{ row.NonWinner_Count }}</td>
+                  <td>{{ formatPct(row.Win_Rate_Pct) }}</td>
+                  <td>{{ row.Printed_Count }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+
+    </section>
+    }
+
+    @if (!gameSetupError() && gameSetup()) {
+      <section class="card-overview-panel surface-card" aria-labelledby="card-overview-setup-heading">
+        <header class="card-overview-panel__head">
+          <h2 id="card-overview-setup-heading">Check Game Setup</h2>
+          @if (gameSetupSummary(); as os) {
+            <span class="card-overview-panel__badge">Game {{ os.Game_ID }}</span>
+            @if (gameSetupOverallStatus(); as overallStatus) {
+              <span
+                class="card-overview-panel__badge card-overview-panel__badge--status {{ validationStatusClass(overallStatus) }}">
+                {{ overallStatus }}
+              </span>
+            }
+          }
+        </header>
+
+        @if (gameSetupHeader(); as h) {
+          <dl class="card-overview-summary">
+            <div><dt>Game_ID_Checked</dt><dd>{{ h.Game_ID_Checked }}</dd></div>
+            <div><dt>User_ID_Found</dt><dd>{{ formatValue(h.User_ID_Found) }}</dd></div>
+            <div><dt>Call_List_ID_Found</dt><dd>{{ formatValue(h.Call_List_ID_Found) }}</dd></div>
+            <div><dt>Check_Timestamp</dt><dd>{{ formatDate(h.Check_Timestamp) }}</dd></div>
+          </dl>
+        }
+
+        @if (gameSetupSummary(); as os) {
+          <p
+            class="card-overview-sync-status"
+            [class.is-pass]="validationStatusClass(os.Inning_Sync_Status) === 'is-pass'"
+            [class.is-warn]="validationStatusClass(os.Inning_Sync_Status) === 'is-warn'"
+            [class.is-fail]="validationStatusClass(os.Inning_Sync_Status) === 'is-fail'">
+            {{ formatValue(os.Inning_Sync_Status) }}
+          </p>
+          <dl class="card-overview-summary">
+            <div><dt>User_ID</dt><dd>{{ formatValue(os.User_ID) }}</dd></div>
+            <div><dt>Call_List_ID</dt><dd>{{ formatValue(os.Call_List_ID) }}</dd></div>
+            <div><dt>User_Game_Count</dt><dd>{{ formatValue(os.User_Game_Count) }}</dd></div>
+            <div><dt>Game_Records</dt><dd>{{ formatValue(os.Game_Records) }}</dd></div>
+            <div><dt>CallList_Master_Innings</dt><dd>{{ formatValue(os.CallList_Master_Innings) }}</dd></div>
+            <div><dt>Songs_Innings</dt><dd>{{ formatValue(os.Songs_Innings) }}</dd></div>
+            <div><dt>Cards_Innings</dt><dd>{{ formatValue(os.Cards_Innings) }}</dd></div>
+            <div><dt>Total_Songs</dt><dd>{{ formatValue(os.Total_Songs) }}</dd></div>
+            <div><dt>Total_Cards</dt><dd>{{ formatValue(os.Total_Cards) }}</dd></div>
+          </dl>
+        }
+
+        @if (setupInningComparisons().length > 0) {
+          <div class="card-overview-table-wrap">
+            <h3>Inning comparisons</h3>
+            <table class="card-overview-table">
+              <thead>
+                <tr>
+                  <th>Inning</th>
+                  <th>CL master</th>
+                  <th>Songs</th>
+                  <th>Song count</th>
+                  <th>Cards</th>
+                  <th>Card count</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of setupInningComparisons(); track trackBySetupInning($index, row)) {
+                  <tr>
+                    <td>{{ row.Inning }}</td>
+                    <td>{{ formatValue(row.Has_CallList_Master) }}</td>
+                    <td>{{ formatValue(row.Has_Songs) }}</td>
+                    <td>{{ formatValue(row.Song_Count) }}</td>
+                    <td>{{ formatValue(row.Has_Cards) }}</td>
+                    <td>{{ formatValue(row.Card_Count) }}</td>
+                    <td class="card-overview-status-cell {{ validationStatusClass(row.Inning_Status) }}">
+                      {{ formatValue(row.Inning_Status) }}
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        @if (setupCardsByInning().length > 0) {
+          <div class="card-overview-table-wrap">
+            <h3>Cards by inning</h3>
+            <table class="card-overview-table">
+              <thead>
+                <tr>
+                  <th>Inning</th>
+                  <th>Total</th>
+                  <th>Unique IDs</th>
+                  <th>Players</th>
+                  <th>Winners</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of setupCardsByInning(); track trackBySetupCardsInning($index, row)) {
+                  <tr>
+                    <td>{{ row.Inning }}</td>
+                    <td>{{ formatValue(row.Total_Cards) }}</td>
+                    <td>{{ formatValue(row.Unique_Card_IDs) }}</td>
+                    <td>{{ formatValue(row.Unique_Players) }}</td>
+                    <td>{{ formatValue(row.Winner_Count) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        @if (setupValidationReport().length > 0) {
+          <div class="card-overview-table-wrap">
+            <h3>Validation report</h3>
+            <table class="card-overview-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Component</th>
+                  <th>Status</th>
+                  <th>Message</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of setupValidationReport(); track trackByValidation($index, row)) {
+                  <tr>
+                    <td>{{ row.Check_Number }}</td>
+                    <td>{{ formatValue(row.Component) }}</td>
+                    <td class="card-overview-status-cell {{ validationStatusClass(row.Status) }}">
+                      {{ formatValue(row.Status) }}
+                    </td>
+                    <td>{{ formatValue(row.Message) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    }
+
+    @if (!checkCardsError() && checkCards()) {
+      <section class="card-overview-panel surface-card" aria-labelledby="card-overview-check-heading">
+        <header class="card-overview-panel__head">
+          <h2 id="card-overview-check-heading">Check cards</h2>
+          <span class="card-overview-panel__badge">{{ checkCardsTotalCards() }} card(s) · User {{ userIdInput() }}</span>
+        </header>
+
+        @if (checkCardsGameSummary().length > 0) {
+          <div class="card-overview-table-wrap">
+            <h3>Game summary</h3>
+            <table class="card-overview-table">
+              <thead>
+                <tr>
+                  <th>Game</th>
+                  <th>Name</th>
+                  <th>Status</th>
+                  <th>CLID</th>
+                  <th>Cards</th>
+                  <th>Winners</th>
+                  <th>Win %</th>
+                  <th>Printed</th>
+                  <th>Last card</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of checkCardsGameSummary(); track trackByCheckGame($index, row)) {
+                  <tr>
+                    <td>{{ row.Game_ID }}</td>
+                    <td>{{ formatValue(row.Game_Name) }}</td>
+                    <td class="card-overview-status-cell {{ validationStatusClass(row.Game_Status) }}">
+                      {{ formatValue(row.Game_Status) }}
+                    </td>
+                    <td>{{ formatValue(row.Call_List_ID) }}</td>
+                    <td>{{ formatValue(row.Total_Cards) }}</td>
+                    <td>{{ formatValue(row.Total_Winners) }}</td>
+                    <td>{{ formatPct(row.Win_Rate_Pct) }}</td>
+                    <td>{{ formatValue(row.Total_Printed) }}</td>
+                    <td>{{ formatDate(row.Last_Card_Created) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        @if (checkCardsInningSummary().length > 0) {
+          <div class="card-overview-table-wrap">
+            <h3>Inning Summary of Songs</h3>
+            <table class="card-overview-table">
+              <thead>
+                <tr>
+                  <th>Game</th>
+                  <th>CLID</th>
+                  <th>Innings</th>
+                  <th>Cards</th>
+                  <th>Songs</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of checkCardsInningSummary(); track trackByCheckInningRow($index, row)) {
+                  <tr>
+                    <td>{{ row.Game_ID }}</td>
+                    <td>{{ formatValue(row.Call_List_ID) }}</td>
+                    <td>{{ row.Inning }}</td>
+                    <td>{{ formatValue(row.Card_Count) }}</td>
+                    <td>{{ formatValue(row.Song_Count) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+
+        @if (checkCardsSongCounts().length > 0) {
+          <div class="card-overview-table-wrap">
+            <h3>Song counts</h3>
+            <table class="card-overview-table">
+              <thead>
+                <tr>
+                  <th>Game</th>
+                  <th>CLID</th>
+                  <th>Call list</th>
+                  <th>Inning</th>
+                  <th>In inning</th>
+                  <th>Called</th>
+                  <th>Not called</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of checkCardsSongCounts(); track trackByCheckSong($index, row)) {
+                  <tr>
+                    <td>{{ row.Game_ID }}</td>
+                    <td>{{ formatValue(row.Call_List_ID) }}</td>
+                    <td>{{ formatValue(row.Call_List_Name) }}</td>
+                    <td>{{ row.Inning }}</td>
+                    <td>{{ formatValue(row.Songs_In_Inning) }}</td>
+                    <td>{{ formatValue(row.Songs_Called) }}</td>
+                    <td>{{ formatValue(row.Songs_Not_Called) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+    }
+  }
+</section>

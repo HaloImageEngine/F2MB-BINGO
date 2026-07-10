@@ -1,0 +1,108 @@
+.slidecardone-chrome__input--card-id {
+  width: 5.25rem;
+}
+
+.slidecardone-stage {
+  display: grid;
+}
+
+.slidecardone-card {
+  max-width: 62rem;
+  justify-self: center;
+  width: 100%;
+}
+
+@media print {
+  .slidecardone-stage {
+    display: block;
+    overflow: visible;
+  }
+
+  .slidecardone-card {
+    --slidecardsw-print-card-height: var(--bingo-print-page-height, 8.26in);
+    --slidecardsw-print-header-height: 1.04in;
+    --slidecardsw-print-footer-height: 0.82in;
+    grid-template-rows:
+      var(--slidecardsw-print-header-height)
+      minmax(0, 1fr)
+      var(--slidecardsw-print-footer-height);
+    align-content: stretch;
+    gap: 0.03in;
+    width: 100% !important;
+    max-width: 10.3in;
+    height: var(--slidecardsw-print-card-height) !important;
+    min-height: var(--slidecardsw-print-card-height) !important;
+    max-height: var(--slidecardsw-print-card-height) !important;
+    margin: 0 auto;
+    padding: 0.05in;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .slidecardone-card > .slidecardsw-card__header {
+    display: none !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .slidecardone-card.surface-card {
+    padding: 0.05in !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .slidecardone-card .slidecardsw-card__print-footer-qr {
+    width: 0.68in !important;
+    height: 0.68in !important;
+    max-width: 0.68in !important;
+    max-height: 0.68in !important;
+  }
+
+  .slidecardone-card .slidecardsw-card__print-title {
+    font-size: 15pt;
+  }
+
+  .slidecardone-card .slidecardsw-card__print-sponsor-text {
+    font-size: 8.5pt;
+  }
+
+  .slidecardone-card .slidecardsw-card__print-gci {
+    font-size: 8pt;
+  }
+
+  .slidecardone-card .slidecardsw-card__grid {
+    gap: 0.025in;
+    grid-template-rows: repeat(5, minmax(0, 1fr));
+    height: 100%;
+    min-height: 0;
+  }
+
+  .slidecardone-card .slidecardsw-square {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    height: 100%;
+    padding: 0.025in;
+  }
+
+  .slidecardone-card .slidecardsw-square__content {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .slidecardone-card .slidecardsw-square__title {
+    font-size: 7.35pt;
+    line-height: 1.05;
+  }
+
+  .slidecardone-card .slidecardsw-square__artist {
+    font-size: 6.5pt;
+    line-height: 1.05;
+  }
+
+  .slidecardone-card .slidecardsw-square__topline {
+    font-size: 5.6pt;
+  }
+}

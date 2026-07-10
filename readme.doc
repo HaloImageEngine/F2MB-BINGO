@@ -1,0 +1,281 @@
+================================================================================
+  GETGOGI ADMIN DASHBOARD — PROJECT SESSION ARCHIVE
+  Angular 17 Standalone | SCSS | REST API Integration
+  Maintainer: GetGogi Dev Team
+  Versioning Scheme: YY.MM.DD.Type  (T = Test/Dev, P = Production)
+================================================================================
+
+NOTE: This document archives known session work and codebase state derived
+from direct code inspection. Use this log to research when specific features,
+components, or APIs were introduced or changed.
+
+================================================================================
+  SESSION LOG
+================================================================================
+
+--------------------------------------------------------------------------------
+  DATE: 2026-03-16  |  VERSION: 26.03.16.T (Dev)  /  26.03.16.P (Prod)
+  TASK: Full project scaffold + feature build — Angular Admin Dashboard
+--------------------------------------------------------------------------------
+
+OVERVIEW
+  Project "GetGogi Admin Dashboard" scaffolded from scratch using Angular CLI 17.
+  Standalone component architecture adopted throughout. All routes are lazy-loaded.
+  SCSS with shared design tokens in src/styles.scss for unified theming.
+  API proxy configured via proxy.conf.json for CMS backend calls.
+
+PROJECT STRUCTURE ESTABLISHED
+  src/
+    app/
+      app.component.ts        — Shell: sidebar nav, highlight band, utility bar
+      app.routes.ts           — Lazy-loaded route registry with AuthGuard
+      app.config.ts           — Angular providers + HTTP client bootstrap
+      mocks/
+        mock-menu-items.ts    — Fallback dataset when useMockMenuApi = true
+      models/
+        menu-item.model.ts    — MenuItem interface, CrudAction type, MenuItemPayload
+        order-list-item.model.ts — OrderListItem, OrderHeadDetail, OrderStatus union
+        soup-menu-item.model.ts  — SoupMenuItem interface (supplemental menu type)
+      services/
+        auth.guard.ts         — CanActivate guard using localStorage 'authToken'
+        menu.service.ts       — CRUD read/write for main menu items via REST
+        menubv.service.ts     — Menu service variant (BV location/view)
+        menups.service.ts     — Menu service variant (PS location/view)
+        orders-list.service.ts — Fetch orders by status, full detail, status updates
+
+ENVIRONMENT CONFIGURATION
+  environment.ts (DEV)
+    production          : false
+    version             : '26.03.16.T'
+    useMockMenuApi      : false
+    menuApiBaseUrl      : https://api.getgogi.com/api/CMSDemo/Menu
+    ordersApiBaseUrl    : https://api.getgogi.com/api/CMSDemo/Orders
+    ordersStatusChangeApiUrl: https://api.getgogi.com/api/CMSDemo/Orders/Update_OrderStatus
+    defaultLogin        : admin
+    defaultPassword     : [set in environment file]
+
+  environment.prod.ts (PRODUCTION)
+    production          : true
+    version             : '26.03.16.P'
+    All API URLs        : same as DEV (same backend, same credentials)
+
+ROUTES REGISTERED (app.routes.ts)
+  /                   → redirects to /overview
+  /login              → LoginComponent       (public)
+  /overview           → OverviewComponent    (guarded)
+  /menu-manager       → MenuManagerComponent (guarded)
+  /menu-list          → MenuListComponent    (guarded)
+  /menu-listps        → MenuListpsComponent  (guarded)  [PS variant]
+  /menu-listbv        → MenuListbvComponent  (guarded)  [BV variant]
+  /marketing          → MarketingComponent   (guarded)
+  /orders             → OrdersComponent      (guarded)
+  /order-list.components → OrdersListComponent (guarded)
+  /customers          → CustomersComponent   (guarded)
+  /customer-list      → CustomerComponent    (guarded)
+  /settings           → SettingsComponent    (guarded)
+  /**                 → redirects to /overview
+
+SHELL COMPONENT (app.component.ts)
+  Title               : 'GogiTime Admin Dock'
+  Nav Sections:
+    Operations:
+      Menu Manager    path=/menu-manager  accent=amber  icon=MM
+      Menu List       path=/menu-list     accent=teal   icon=ML
+      Orders          path=/orders        accent=teal   icon=OR
+      Order-List      path=/order-list.components  accent=teal  icon=OL
+      Customers       path=/customers     accent=iris   icon=CU
+      Customer List   path=/customer-list accent=iris   icon=CL
+      Settings        path=/settings      accent=rose   icon=ST
+    Intelligence:
+      Overview        path=/overview      accent=iris   icon=OV
+      Marketing       path=/marketing     accent=rose   icon=MK  badge=LIVE
+  Utility Highlights:
+    Live Orders       value='0'
+    Avg. Ticket       value='$0.00'
+    Marketing Push    value='4 active'
+  Liaison             : 'Ops Liaison · Riley'
+  Sidebar toggle      : isSidebarOpen boolean with toggleSidebar() / closeSidebar()
+
+DATA MODELS (models/)
+
+  menu-item.model.ts
+    CrudAction        : 'c' | 'r' | 'u' | 'd'
+    MenuItem {
+      ItemID, ItemKey, ItemName, ItemDescription, ItemCategory
+      ItemPrice, ItemPriceString, ItemCost, ItemImage, ItemBadge
+      IsAvailable, IsActive, PreparationTime, Calories
+    }
+    MenuItemPayload   : Partial<MenuItem> & { ItemID?: number }
+
+  order-list-item.model.ts
+    OrderStatus       : 'pending' | 'complete' | 'confirmed' | 'ready' | 'preparing'
+    OrderListItem {
+      OrderID, OrderNumber, StatusCode, StatusName
+      CustomerName, CustomerPhone, CustomerEmail
+      OrderType, OrderNotes
+      SubTotal, TaxAmount, DiscountAmount, TotalAmount, ItemCount
+      ItemID, ItemName, ItemCategory, UnitPrice, Quantity, LineTotal
+      ConfirmedAt, CompletedAt, CancelledAt, CreatedAt, UpdatedAt
+      SpecialInstructions
+    }
+    OrderHeadDetail   : header-only variant of above
+    OrderFullDetailResponse : head + line items
+
+SERVICES (services/)
+
+  auth.guard.ts
+    Strategy          : localStorage token ('authToken') presence check
+    Logout            : static AuthGuard.logout() clears token + sets isLoggedOut flag
+    Post-login redirect: stores attempted URL in localStorage('postLoginRedirect')
+
+  menu.service.ts
+    getMenuItems()    : GET  CRUD_ReadALL — falls back to mock if API fails
+    mutateMenuItem()  : POST CRUD + action query param ('c','r','u','d')
+    updateMenuItem()  : validates ItemID, applies mock update or calls mutateMenuItem('u')
+    normalizeApiPayload(): handles both array and wrapped-object API responses
+
+  menubv.service.ts   : BV location menu variant — read/write pattern mirrors menu.service
+  menups.service.ts   : PS location menu variant — read/write pattern mirrors menu.service
+
+  orders-list.service.ts
+    getOrdersByStatus(status) : GET  Get_OrdersbyStatus?status=STATUS
+    getOrderByIdFull(orderId) : GET  Get_OrderbyOrderIdFull_HeadandDetails?OrderId=ID
+    updateOrderStatus(id, status): POST Update_OrderStatus { OrderID, StatusCode }
+    StatusCode mapping : first char uppercase + rest lowercase
+
+PAGE COMPONENTS (pages/)
+
+  login/
+    LoginComponent      — Authentication form, writes authToken to localStorage
+
+  overview/
+    OverviewComponent   — KPI metrics, activity feed, readiness checks, pipeline stages
+    Metrics:
+      Kitchen throughput: 312 plates/hr  (+8% vs yesterday)
+      Delivery promise  : 24 min avg     (-2 min vs target)
+      Customer sentiment: 4.82 ★
+      Inventory buffer  : 3.4 hrs
+    Readiness checks    : line cooks, courier capacity, menu QA, promo assets
+    Kitchen pipeline    : Prep > Cooking > Packaging > Courier handoff
+
+  menu-manager/
+    MenuManagerComponent — Inventory grid, upcoming drops, bulk utilities
+
+  menu-list/
+    MenuListComponent   — Live editable table of all menu items
+    EditableRow extends MenuItem with: dirty, saving, rowError, rowSuccess flags
+    Inline save per row using menuService.updateMenuItem()
+    Signal-based state  : loading, error, rows (Angular signals)
+    trackByRow          : tracks by ItemID
+
+  menu-listps/
+    MenuListpsComponent — PS location variant of menu list (mirrors menu-list)
+
+  menu-listbv/
+    MenuListbvComponent — BV location variant of menu list (mirrors menu-list)
+
+  marketing/
+    MarketingComponent  — Campaign pacing, channel insights, active push tracking
+
+  orders/
+    OrdersComponent     — Live fulfillment timeline, zone capacity board
+
+  orders-list/
+    OrdersListComponent
+      Status filter     : pending / complete / confirmed / ready / preparing
+      Signal state      : selectedStatus, loading, error, orders, selectedOrder
+      Computed signals  : totalOrders, totalItems, totalSales
+      On status change  : reloads order list via ordersListService.getOrdersByStatus()
+    OrderDetailComponent
+      Sub-component for expanded order detail view within orders-list page
+    StatusChangeComponent
+      Inline status mutation — calls ordersListService.updateOrderStatus()
+
+  customers/
+    CustomersComponent
+      Segments:
+        Total Customers   : 200 count, +14% month
+        Regular Customers : 37 count,  +6% month
+        Weekly Mailing    : 180 count,  +3% month
+      Voice feed (guest feedback + action items): 3 entries
+    CustomerComponent     — Browse/search all customers (customer-list route)
+    CustDetailComponent   — Individual customer detail view
+
+  settings/
+    SettingsComponent     — Automation rules, access overview
+
+MOCK DATA (mocks/)
+  mock-menu-items.ts    — Static array of MenuItem objects used when
+                          environment.useMockMenuApi = true or API is unreachable
+
+API ENDPOINTS AT LAUNCH
+  Menu Read All         : https://api.getgogi.com/api/CMSDemo/Menu/CRUD_ReadALL
+  Menu CRUD             : https://api.getgogi.com/api/CMSDemo/Menu/CRUD
+  Orders by Status      : https://api.getgogi.com/api/CMSDemo/Orders/Get_OrdersbyStatus
+  Order Full Detail     : https://api.getgogi.com/api/CMSDemo/Orders/Get_OrderbyOrderIdFull_HeadandDetails
+  Order Status Update   : https://api.getgogi.com/api/CMSDemo/Orders/Update_OrderStatus
+
+BUILD / SCRIPTS
+  npm start             — dev server at http://localhost:4200 with API proxy
+  npm run build         — production build to dist/
+  npm test              — Karma unit tests
+  npm run watch         — build in watch mode
+
+DEPLOY NOTES
+  web.config included for IIS deployment (URL rewrite for SPA routing)
+  proxy.conf.json routes /api/* calls in dev to avoid CORS issues
+
+--------------------------------------------------------------------------------
+  END SESSION: 2026-03-16
+--------------------------------------------------------------------------------
+
+================================================================================
+  FUTURE SESSION TEMPLATE — COPY AND FILL FOR EACH NEW SESSION
+================================================================================
+
+--------------------------------------------------------------------------------
+  DATE: YYYY-MM-DD  |  VERSION: YY.MM.DD.T or YY.MM.DD.P
+  TASK: [brief description of session goal]
+--------------------------------------------------------------------------------
+
+CHANGES
+  [file path]
+    - [what was changed and why]
+
+NEW COMPONENTS
+  [component name / path]
+    - [purpose, inputs/outputs, signals used]
+
+NEW API ENDPOINTS
+  [method and URL]
+    - [model used, service method name]
+
+BUGS FIXED
+  - [description of bug, root cause, fix applied]
+
+NOTES
+  [any decisions, trade-offs, or follow-ups]
+
+--------------------------------------------------------------------------------
+  END SESSION: YYYY-MM-DD
+--------------------------------------------------------------------------------
+
+================================================================================
+  END OF ARCHIVE
+================================================================================
+
+
+1. Build production
+npm run build:prod
+Output goes to: dist/bingo-djgogi-family/
+
+2. Prepare deploy package (last step before upload)
+npm run deploy:prepare
+This copies a clean site-only folder to: deploy/bingo-djgogi-family/
+
+Full sequence
+npm run build:prod
+npm run deploy:prepare
+Then upload everything inside deploy/bingo-djgogi-family/ to production.
+
+There is no npm run deploy — the last command is npm run deploy:prepare.

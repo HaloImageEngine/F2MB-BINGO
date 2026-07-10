@@ -1,0 +1,269 @@
+<section class="slidecardsw-page slidecards-page--compact">
+  <header class="slidecards-chrome surface-card">
+    <div class="slidecards-chrome__hero-line">
+      <span class="slidecards-chrome__eyebrow">Top Cards Slider</span>
+      <h1 class="slidecards-chrome__title">Top {{ topN() }} Bingo Card Pairs</h1>
+      <p class="slidecards-chrome__subtitle">
+        Shows the top {{ topN() }} cards for Game {{ gameId() }}, Call list {{ callListId() }}, Inning
+        {{ inning() }} (refreshes while ActiveGame is on).
+      </p>
+      <span class="slidecards-chrome__user">
+        {{ currentUser()?.UserAlias || '—' }} · {{ currentUser()?.UserId ?? '—' }}
+      </span>
+      <a routerLink="/console" class="slidecards-chrome__back">Back to CONSOLE</a>
+    </div>
+
+    <div class="slidecards-chrome__toolbar-line" *ngIf="!state().loading && !state().error">
+      <label class="slidecards-chrome__field" for="tc-game-id">
+        <span>Game</span>
+        <input
+          id="tc-game-id"
+          type="number"
+          class="slidecards-chrome__input"
+          [value]="gameIdInput()"
+          (change)="updateGameIdInput($event)"
+          min="1"
+        />
+      </label>
+
+      <label class="slidecards-chrome__field" for="tc-call-list-id">
+        <span>List</span>
+        <app-call-list-id-field
+          id="tc-call-list-id"
+          [value]="callListIdInput()"
+          (valueChange)="setCallListIdInput($event)"
+          [allowEmpty]="false"
+          inputClass="slidecards-chrome__input"
+          selectClass="slidecards-chrome__input"
+          ariaLabel="Call List ID" />
+      </label>
+
+      <label class="slidecards-chrome__field" for="tc-inning">
+        <span>Inning</span>
+        <input
+          id="tc-inning"
+          type="number"
+          class="slidecards-chrome__input"
+          [value]="inningInput()"
+          (change)="updateInningInput($event)"
+          min="1"
+        />
+      </label>
+
+      <label class="slidecards-chrome__field" for="tc-top-n">
+        <span>Top N</span>
+        <input
+          id="tc-top-n"
+          type="number"
+          class="slidecards-chrome__input slidecards-chrome__input--topn"
+          [value]="topNInput()"
+          (change)="updateTopNInput($event)"
+          min="1"
+          max="99"
+        />
+      </label>
+
+      <button type="button" class="slidecards-chrome__load-btn" (click)="loadCards()">Load</button>
+
+      <ng-container *ngIf="slides().length > 0">
+        <span class="slidecards-chrome__sep" aria-hidden="true"></span>
+
+        <button
+          type="button"
+          class="slidecardsw-print__button slidecards-chrome__print-btn"
+          (click)="printAllCards()"
+          aria-label="Print top bingo card pairs"
+        >
+          Print All Cards
+        </button>
+
+        <button
+          type="button"
+          class="slidecardsw-print__button slidecardsw-print__button--secondary slidecards-chrome__print-btn"
+          (click)="printAllCardsWithMeta()"
+          aria-label="Print top bingo card pairs with GameID and CardID"
+        >
+          Print w/ GID/CID
+        </button>
+
+        <span class="slidecards-chrome__slide-meta">
+          {{ state().cards.length }} cards · {{ currentSlideIndex() + 1 }}/{{ slides().length }}
+        </span>
+
+        <button
+          type="button"
+          class="slidecardsw-carousel__arrow slidecards-chrome__arrow"
+          (click)="goToPreviousSlide()"
+          [disabled]="!canGoPrevious()"
+          aria-label="Go to previous cards"
+        >
+          &#8249;
+        </button>
+
+        <button
+          type="button"
+          class="slidecardsw-carousel__arrow slidecards-chrome__arrow"
+          (click)="goToNextSlide()"
+          [disabled]="!canGoNext()"
+          aria-label="Go to next cards"
+        >
+          &#8250;
+        </button>
+      </ng-container>
+    </div>
+  </header>
+
+  <section class="surface-card slidecardsw-status slidecards-chrome__status" *ngIf="state().loading">
+    <p>Loading top {{ topN() }} cards for GameID {{ gameId() }}...</p>
+  </section>
+
+  <section class="surface-card slidecardsw-status slidecardsw-status--error" *ngIf="state().error as error">
+    <p>{{ error }}</p>
+  </section>
+
+  <section class="slidecardsw-carousel" *ngIf="!state().loading && !state().error && slides().length > 0">
+    <section
+      #sliderViewport
+      class="slidecardsw-slider"
+      aria-label="Top bingo card pairs"
+      (scroll)="onSliderScroll()"
+    >
+      <article class="slidecardsw-slide surface-card slidecardsw-slide--compact" *ngFor="let slide of slides(); let slideIndex = index">
+        <header class="slidecardsw-slide__header slidecardsw-slide__header--compact">
+          <span class="tag accent-amber">Slide {{ slideIndex + 1 }}</span>
+        </header>
+
+        <div class="slidecardsw-slide__cards">
+          <section class="slidecardsw-card" *ngFor="let card of slide; let cardIndex = index">
+            <div class="slidecardsw-card__print-header slidecardsw-banner-container" aria-hidden="true">
+              <div class="slidecardsw-banner-container__left">
+                <img class="slidecardsw-card__print-logo" src="assets/images/DJGogi.png" alt="DJ GOGI logo" />
+              </div>
+              <div class="slidecardsw-banner-container__title">
+                <p class="slidecardsw-card__print-title">DJ Gogi Music Bingo</p>
+              </div>
+              <div class="slidecardsw-banner-container__right">
+                <img class="slidecardsw-card__print-sponsor-logo" src="assets/images/HillTop5.png" alt="HillTop sponsor logo" />
+              </div>
+              <div class="slidecardsw-banner-container__sponsor">
+                <p class="slidecardsw-card__print-sponsor-text">{{ sponsorSettings.sponsorBannerText() }}</p>
+              </div>
+              <div class="slidecardsw-card__print-meta slidecardsw-card__meta">
+                <p class="slidecardsw-card__id-row">
+                  <span
+                    class="slidecardsw-card__id-pair"
+                    [class.slidecardsw-card__id-pair--print-hidden]="!showPrintCardMeta()"
+                  >
+                    <span class="slidecardsw-card__id-label">GID</span>
+                    <span class="slidecardsw-card__id-value">{{ card.GameID }}</span>
+                  </span>
+                  <span class="slidecardsw-card__id-pair">
+                    <span class="slidecardsw-card__id-label">CLID</span>
+                    <span class="slidecardsw-card__id-value">{{ callListId() }}</span>
+                  </span>
+                  <span class="slidecardsw-card__id-pair">
+                    <span class="slidecardsw-card__id-label">Inning</span>
+                    <span class="slidecardsw-card__id-value">{{ inning() }}</span>
+                  </span>
+                  <span
+                    class="slidecardsw-card__id-pair"
+                    [class.slidecardsw-card__id-pair--print-hidden]="!showPrintCardMeta()"
+                  >
+                    <span class="slidecardsw-card__id-label">CID</span>
+                    <span class="slidecardsw-card__id-value">{{ card.CardID }}</span>
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <header class="slidecardsw-card__header slidecardsw-sponsor-container">
+              <div class="slidecardsw-card__meta slidecardsw-card__meta--screen">
+                <p class="slidecardsw-card__id-row">
+                  <span class="slidecardsw-card__id-pair">
+                    <span class="slidecardsw-card__id-label">GID</span>
+                    <span class="slidecardsw-card__id-value">{{ card.GameID }}</span>
+                  </span>
+                  <span class="slidecardsw-card__id-pair">
+                    <span class="slidecardsw-card__id-label">CLID</span>
+                    <span class="slidecardsw-card__id-value">{{ callListId() }}</span>
+                  </span>
+                  <span class="slidecardsw-card__id-pair">
+                    <span class="slidecardsw-card__id-label">Inning</span>
+                    <span class="slidecardsw-card__id-value">{{ inning() }}</span>
+                  </span>
+                  <span class="slidecardsw-card__id-pair">
+                    <span class="slidecardsw-card__id-label">CID</span>
+                    <span class="slidecardsw-card__id-value">{{ card.CardID }}</span>
+                  </span>
+                </p>
+              </div>
+              <div class="slidecardsw-sponsor-area" aria-label="Sponsor area placeholder">
+                <div class="slidecardsw-sponsor-banner">
+                  <span class="slidecardsw-sponsor-banner__label">{{ sponsorSettings.sponsorBannerText() }}</span>
+                  <span class="slidecardsw-sponsor-banner__gci">
+                    Top #{{ slideIndex * 2 + cardIndex + 1 }} · Call list {{ callListId() }} · Inning {{ inning() }}
+                  </span>
+                </div>
+              </div>
+            </header>
+
+            <div class="slidecardsw-card__grid" aria-label="Bingo card squares">
+              <article
+                class="slidecardsw-square"
+                *ngFor="let square of card.Squares"
+                [class.is-called]="square.IsCalled"
+                [class.is-free]="square.IsFreeSpace"
+              >
+                <div class="slidecardsw-square__topline">
+                  <span>{{ square.SquareCode }}</span>
+                  <span>{{ square.SquarePosition }}</span>
+                </div>
+                <div class="slidecardsw-square__content" *ngIf="square.Song; else freeSpaceTemplate">
+                  <p class="slidecardsw-square__title">{{ square.Song.SongName }}</p>
+                  <p class="slidecardsw-square__artist">{{ square.Song.SongArtist }}</p>
+                </div>
+                <ng-template #freeSpaceTemplate>
+                  <div class="slidecardsw-square__content slidecardsw-square__content--free">
+                    <p class="slidecardsw-square__title">DJ GOGI</p>
+                    <p class="slidecardsw-square__artist">Freebie</p>
+                  </div>
+                </ng-template>
+              </article>
+            </div>
+
+            <footer class="slidecardsw-card__print-footer" aria-hidden="true">
+              <div class="slidecardsw-card__print-footer-zone">
+                <img
+                  class="slidecardsw-card__print-footer-qr"
+                  [src]="qrSettings.qrImageUrls()[0]"
+                  [alt]="'QR code 1: ' + qrSettings.qrLink1()"
+                />
+                <span class="slidecardsw-card__print-footer-caption">{{ qrSettings.qrLabel1() }}</span>
+              </div>
+              <div class="slidecardsw-card__print-footer-zone">
+                <img
+                  class="slidecardsw-card__print-footer-qr"
+                  [src]="qrSettings.qrImageUrls()[1]"
+                  [alt]="'QR code 2: ' + qrSettings.qrLink2()"
+                />
+                <span class="slidecardsw-card__print-footer-caption">{{ qrSettings.qrLabel2() }}</span>
+              </div>
+              <div class="slidecardsw-card__print-footer-zone">
+                <img
+                  class="slidecardsw-card__print-footer-qr"
+                  [src]="qrSettings.qrImageUrls()[2]"
+                  [alt]="'QR code 3: ' + qrSettings.qrLink3()"
+                />
+                <span class="slidecardsw-card__print-footer-caption">{{ qrSettings.qrLabel3() }}</span>
+              </div>
+            </footer>
+          </section>
+        </div>
+      </article>
+    </section>
+  </section>
+
+  <section class="surface-card slidecardsw-status" *ngIf="!state().loading && !state().error && slides().length === 0">
+    <p>No top cards were returned for GameID {{ gameId() }}, Call list {{ callListId() }}, Inning {{ inning() }}.</p>
+  </section>
+</section>

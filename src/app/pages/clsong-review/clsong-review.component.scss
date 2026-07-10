@@ -1,0 +1,490 @@
+.clsong-review-page {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.25rem 1.5rem 2rem;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.clsong-review-page__header {
+  padding: 1.25rem 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid var(--border-soft, rgba(148, 163, 184, 0.25));
+  background: linear-gradient(145deg, rgba(11, 18, 32, 0.94), rgba(19, 28, 46, 0.88));
+}
+
+.clsong-review-page__back {
+  display: inline-flex;
+  margin-bottom: 0.65rem;
+  color: var(--accent-teal, #5eead4);
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.clsong-review-page__back:hover {
+  text-decoration: underline;
+}
+
+.clsong-review-page h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.clsong-review-page__copy {
+  margin: 0.5rem 0 0;
+  color: var(--text-muted, #94a3b8);
+  line-height: 1.5;
+  max-width: 52rem;
+}
+
+.clsong-review-page__user-top {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.7rem;
+  color: var(--text-muted, #94a3b8);
+  font-size: 0.9rem;
+}
+
+.clsong-review-controls {
+  padding: 1rem 1.25rem;
+  border-radius: 0.85rem;
+  border: 1px solid var(--border-soft, rgba(148, 163, 184, 0.2));
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.clsong-review-controls__grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.clsong-review-field {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 8rem;
+}
+
+.clsong-review-field span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #94a3b8);
+}
+
+.clsong-review-field input {
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.8);
+  color: #e2e8f0;
+  width: 100%;
+  max-width: 12rem;
+}
+
+.clsong-review-field select,
+.clsong-review-field__select {
+  padding: 0.55rem 1.75rem 0.55rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background-color: rgba(15, 23, 42, 0.8);
+  color: #e2e8f0;
+  width: 100%;
+  max-width: 12rem;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' viewBox='0 0 12 12'%3E%3Cpath stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='m3 4.5 3 3 3-3'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.55rem center;
+  background-size: 0.7rem;
+}
+
+.clsong-review-field select option,
+.clsong-review-field__select option {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+.clsong-review-controls__actions {
+  display: flex;
+  align-items: flex-end;
+}
+
+.clsong-review-btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.65rem 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.clsong-review-btn--primary {
+  background: linear-gradient(135deg, #1dd3b0, #7fe7d4);
+  color: #07111f;
+}
+
+.clsong-review-btn--remove {
+  align-self: flex-start;
+  flex-shrink: 0;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.72rem;
+  background: rgba(127, 29, 29, 0.35);
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  color: #fecaca;
+}
+
+.clsong-review-btn--remove:hover:not(:disabled) {
+  background: rgba(153, 27, 27, 0.5);
+}
+
+.clsong-review-column__gen-row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+
+.clsong-review-column__genre {
+  flex: 1;
+  min-width: 0;
+  padding: 0.45rem 1.35rem 0.45rem 0.55rem;
+  border: 1px solid #4ade80;
+  border-radius: 999px;
+  background-color: #1a5c24;
+  color: #ffffff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  color-scheme: dark;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' viewBox='0 0 12 12'%3E%3Cpath stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' d='m3 4.5 3 3 3-3'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.45rem center;
+  background-size: 0.65rem;
+}
+
+.clsong-review-column__genre option {
+  background-color: #1a5c24;
+  color: #ffffff;
+}
+
+.clsong-review-column__genre:focus {
+  border-color: #86efac;
+  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.35);
+}
+
+.clsong-review-btn--gen {
+  flex-shrink: 0;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.72rem;
+  background: rgba(6, 95, 70, 0.45);
+  border: 1px solid rgba(52, 211, 153, 0.5);
+  color: #a7f3d0;
+}
+
+.clsong-review-btn--gen:hover:not(:disabled) {
+  background: rgba(6, 95, 70, 0.65);
+}
+
+.clsong-review-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.clsong-review-controls__hint {
+  margin: 0.75rem 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted, #94a3b8);
+}
+
+.clsong-review-controls__hint code {
+  font-size: 0.85em;
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.25rem;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.clsong-review-message {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+}
+
+.clsong-review-message--error {
+  background: rgba(127, 29, 29, 0.25);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  color: #fecaca;
+}
+
+.clsong-review-message--success {
+  background: rgba(6, 78, 59, 0.25);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  color: #a7f3d0;
+}
+
+.clsong-review-message--info {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-strong);
+  color: var(--text-muted);
+}
+
+.clsong-review-board {
+  min-height: 12rem;
+}
+
+.clsong-review-board__state {
+  margin: 0;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--text-muted, #94a3b8);
+  border-radius: 0.85rem;
+  border: 1px dashed rgba(148, 163, 184, 0.3);
+}
+
+.clsong-review-board__state--overlay {
+  margin-bottom: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.82rem;
+  border-style: solid;
+  background: rgba(15, 23, 42, 0.85);
+}
+
+.clsong-review-columns {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+  align-items: start;
+}
+
+.clsong-review-column {
+  display: flex;
+  flex-direction: column;
+  min-height: 16rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(15, 23, 42, 0.5);
+  overflow: hidden;
+}
+
+.clsong-review-column--active {
+  border-color: rgba(94, 234, 212, 0.55);
+  box-shadow: 0 0 0 1px rgba(94, 234, 212, 0.2), 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.clsong-review-column__head {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.clsong-review-column__head-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 0.75rem;
+}
+
+.clsong-review-column--active .clsong-review-column__head {
+  background: rgba(6, 95, 70, 0.2);
+}
+
+.clsong-review-column__head h2 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.clsong-review-column__count {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted, #94a3b8);
+}
+
+.clsong-review-column__body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  max-height: min(70vh, 42rem);
+}
+
+.clsong-review-column__empty {
+  margin: 0;
+  padding: 1.25rem 0.85rem;
+  font-size: 0.85rem;
+  color: var(--text-muted, #94a3b8);
+}
+
+.clsong-review-song-list {
+  list-style: none;
+  margin: 0;
+  padding: 0.35rem 0;
+}
+
+.clsong-review-song {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem 0.65rem;
+  padding: 0.55rem 0.85rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.clsong-review-song__main {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.clsong-review-song:last-child {
+  border-bottom: 0;
+}
+
+.clsong-review-song__id {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted, #94a3b8);
+}
+
+.clsong-review-song__title {
+  font-size: 0.88rem;
+  line-height: 1.3;
+}
+
+.clsong-review-song__detail {
+  font-size: 0.78rem;
+  color: var(--text-muted, #94a3b8);
+}
+
+.clsong-review-song__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.15rem;
+}
+
+.clsong-review-chip {
+  display: inline-block;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  background: rgba(148, 163, 184, 0.15);
+  color: #cbd5e1;
+}
+
+.clsong-review-chip--muted {
+  background: rgba(0, 0, 0, 0.2);
+  color: #94a3b8;
+}
+
+@media (max-width: 1100px) {
+  .clsong-review-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .clsong-review-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.complete-cl-songs-bar {
+  display: grid;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--border-soft, rgba(148, 163, 184, 0.25));
+  border-radius: 1rem;
+  background: rgba(11, 18, 32, 0.72);
+}
+
+.complete-cl-songs-bar__intro {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.complete-cl-songs-bar__title {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.complete-cl-songs-bar__copy {
+  margin: 0;
+  color: var(--text-muted, #94a3b8);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.complete-cl-songs-bar__copy code {
+  font-size: 0.82rem;
+}
+
+.complete-cl-songs-bar__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.85rem 1rem;
+}
+
+.complete-cl-songs-bar__field {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 7rem;
+}
+
+.complete-cl-songs-bar__field span {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted, #94a3b8);
+}
+
+.complete-cl-songs-bar__field input,
+.complete-cl-songs-bar__field select,
+.complete-cl-songs-bar__genre {
+  min-width: 8.5rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border-soft, rgba(148, 163, 184, 0.25));
+  border-radius: 0.65rem;
+  background: rgba(7, 17, 31, 0.85);
+  color: inherit;
+}
+
+.complete-cl-songs-bar__field input[readonly] {
+  opacity: 0.9;
+  cursor: default;
+}
+
+.complete-cl-songs-bar__btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 0.65rem 1.2rem;
+  font-weight: 700;
+  color: #07111f;
+  background: linear-gradient(135deg, #f59e0b, #fcd34d);
+  cursor: pointer;
+  box-shadow: 0 0.45rem 1.1rem rgba(245, 158, 11, 0.22);
+}
+
+.complete-cl-songs-bar__btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.complete-cl-songs-bar__btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}

@@ -1,0 +1,117 @@
+<section class="insert-song-bulk-page">
+  <header class="insert-song-bulk-page__header">
+    <div>
+      <a routerLink="/console" class="insert-song-bulk-page__back">&larr; Back to Console</a>
+      <h1>Bulk Insert Songs</h1>
+      <p class="insert-song-bulk-page__copy">Paste a full JSON array payload and submit it directly to the batch song insert API.</p>
+      <div class="insert-song-bulk-page__user-top">
+        <span><strong>UserAlias:</strong> {{ currentUser()?.UserAlias || '—' }}</span>
+        <span><strong>UserId:</strong> {{ currentUser()?.UserId ?? '—' }}</span>
+      </div>
+    </div>
+
+    <div class="insert-song-bulk-page__actions">
+      <a routerLink="/console/songs" class="insert-song-bulk-page__link">View Song Library</a>
+      <button type="button" class="insert-song-bulk-page__secondary" (click)="resetForm()">Clear</button>
+    </div>
+  </header>
+
+  <section class="insert-song-bulk-shell">
+    <aside class="insert-song-bulk-summary">
+      <div class="insert-song-bulk-summary__card">
+        <span class="insert-song-bulk-summary__label">Payload Type</span>
+        <strong>JSON Array</strong>
+        <small>The textbox accepts the full JSON string that will be passed straight into the service.</small>
+      </div>
+
+      <div class="insert-song-bulk-summary__card">
+        <span class="insert-song-bulk-summary__label">Parsed Rows</span>
+        <strong>{{ parsedCount() }}</strong>
+        <small>Validation must pass before the request can be sent.</small>
+      </div>
+
+      <div class="insert-song-bulk-summary__card" *ngIf="success() as successMessage">
+        <span class="insert-song-bulk-summary__label">Last Result</span>
+        <strong class="insert-song-bulk-summary__success">Completed</strong>
+        <small>{{ successMessage }}</small>
+      </div>
+    </aside>
+
+    <form class="insert-song-bulk-form" [formGroup]="form" (ngSubmit)="submit()">
+      <div class="insert-song-bulk-form__state insert-song-bulk-form__state--error" *ngIf="error() as errorMessage">{{ errorMessage }}</div>
+      <div class="insert-song-bulk-form__state insert-song-bulk-form__state--success" *ngIf="success() as successMessage">{{ successMessage }}</div>
+
+      <label class="insert-song-bulk-field">
+        <span>Song JSON Payload</span>
+        <textarea
+          formControlName="jsonPayload"
+          rows="18"
+          placeholder='[
+  {
+    "Title": "Honky Tonk Man",
+    "Artist": "Dwight Yoakam",
+    "ArtistType": "Solo Artist",
+    "Genre": "Country",
+    "Subgenre": "Honky Tonk",
+    "Mood": "Rowdy",
+    "Tempo": "Fast",
+    "ReleaseYear": 1986,
+    "Decade": "80s",
+    "Era": "Mid 80s Country",
+    "BingoCategory": "80s Country",
+    "Difficulty": "Medium",
+    "ChartPeakPosition": 3,
+    "ChartCountry": "US",
+    "SpotifyPopularity": 62,
+    "DurationSeconds": 183,
+    "Active": true
+  },
+  {
+    "Title": "Streets of Bakersfield",
+    "Artist": "Dwight Yoakam",
+    "ArtistType": "Solo Artist",
+    "Genre": "Country",
+    "Subgenre": "Bakersfield Sound",
+    "Mood": "Nostalgic",
+    "Tempo": "Upbeat",
+    "ReleaseYear": 1988,
+    "Decade": "80s",
+    "Era": "Late 80s Country",
+    "BingoCategory": "80s Country",
+    "Difficulty": "Easy",
+    "ChartPeakPosition": 1,
+    "ChartCountry": "US",
+    "SpotifyPopularity": 66,
+    "DurationSeconds": 192,
+    "Active": true
+  }
+]'></textarea>
+        <small class="insert-song-bulk-field__error" *ngIf="showJsonError()">{{ jsonErrorMessage() }}</small>
+      </label>
+
+      <div class="insert-song-bulk-form__footer">
+        <button type="submit" class="insert-song-bulk-page__primary" [disabled]="saving() || form.invalid">
+          {{ saving() ? 'Sending...' : 'Send JSON' }}
+        </button>
+      </div>
+
+      <section class="insert-song-bulk-results" *ngIf="results().length > 0">
+        <div class="insert-song-bulk-results__head">
+          <span>#</span>
+          <span>ReturnValue</span>
+          <span>Inserted</span>
+          <span>Message</span>
+        </div>
+
+        <div class="insert-song-bulk-results__row" *ngFor="let result of results(); let index = index">
+          <span>{{ index + 1 }}</span>
+          <span>{{ result.ReturnValue ?? 'null' }}</span>
+          <span [class.insert-song-bulk-results__ok]="result.Inserted" [class.insert-song-bulk-results__fail]="!result.Inserted">
+            {{ result.Inserted ? 'True' : 'False' }}
+          </span>
+          <span>{{ result.Message || 'No message returned.' }}</span>
+        </div>
+      </section>
+    </form>
+  </section>
+</section>

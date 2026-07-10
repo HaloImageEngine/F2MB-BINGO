@@ -1,0 +1,174 @@
+<section class="get-pid-page">
+  <header class="page-header">
+    <div class="page-header__titles">
+      <a routerLink="/console" class="get-pid-page__back">&larr; Back to Console</a>
+      <h1 class="page-header__title">Get PID List</h1>
+      <p class="page-header__sub">
+        Loads packet IDs from <code>Get_Game_PacketID_Set_byGCI</code> using Game_ID and Call_List_ID.
+      </p>
+    </div>
+  </header>
+
+  <section class="get-pid-controls surface-card">
+    <div class="get-pid-controls__grid">
+      <label class="get-pid-field">
+        <span>Game_ID</span>
+        <input
+          type="number"
+          min="1"
+          step="1"
+          [ngModel]="gameIdDraft()"
+          (ngModelChange)="onGameIdDraftInput($event)"
+          (keydown.enter)="loadPidList(); $event.preventDefault()"
+          aria-label="Game ID" />
+      </label>
+      <label class="get-pid-field">
+        <span>Call_List_ID</span>
+        <input
+          type="number"
+          min="1"
+          step="1"
+          [ngModel]="callListIdDraft()"
+          (ngModelChange)="onCallListIdDraftInput($event)"
+          (keydown.enter)="loadPidList(); $event.preventDefault()"
+          aria-label="Call List ID" />
+      </label>
+      <label class="get-pid-field get-pid-field--qr-url">
+        <span>QR URL</span>
+        <input
+          type="text"
+          name="QR_URL"
+          [ngModel]="QR_URL()"
+          (ngModelChange)="onQrUrlInput($event)"
+          aria-label="QR URL" />
+      </label>
+      <div class="get-pid-controls__actions">
+        <button type="button" class="btn-load" (click)="loadPidList()" [disabled]="loading()">
+          {{ loading() ? 'Loading…' : 'Load PID List' }}
+        </button>
+        <button
+          type="button"
+          class="btn-print-qr"
+          (click)="printQrMasters()"
+          [disabled]="loading() || printingQrMst() || packetMasters().length === 0">
+          {{ printingQrMst() ? 'Preparing…' : 'Print QR MST' }}
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <div class="state-message state-message--error" *ngIf="error()">
+    <span class="state-message__icon">⚠</span>
+    <span>{{ error() }}</span>
+  </div>
+
+  <div class="state-message" *ngIf="loading() && packetMasters().length === 0">
+    <span class="state-message__icon">⏳</span>
+    <span>Loading PID list…</span>
+  </div>
+
+  <div class="state-message" *ngIf="hasQueried() && !loading() && !error() && packetMasters().length === 0">
+    <span class="state-message__icon">📋</span>
+    <span>No packet masters returned for this Game_ID and Call_List_ID.</span>
+  </div>
+
+  <section class="get-pid-summary surface-card" *ngIf="packetMasters().length > 0">
+    <p>
+      <strong>{{ pidCount() }}</strong> packet master rows
+      <span *ngIf="detailCount() > 0"> · <strong>{{ detailCount() }}</strong> detail rows</span>
+    </p>
+  </section>
+
+  <div class="pid-table-wrap surface-card" *ngIf="packetMasters().length > 0">
+    <table class="pid-table">
+      <thead>
+        <tr>
+          <th>PIDT</th>
+          <th>QR_Link</th>
+          <th>PM_ID</th>
+          <th>Game_ID</th>
+          <th>Call_List_ID</th>
+          <th>Inning</th>
+          <th>User_ID</th>
+          <th>Card Count</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of packetMasters(); trackBy: trackByPidt">
+          <td class="pid-table__pidt">{{ row.PIDT }}</td>
+          <td class="pid-table__qr-link">
+            <a [href]="buildQrLink(row.PIDT)" target="_blank" rel="noopener noreferrer">
+              {{ buildQrLink(row.PIDT) }}
+            </a>
+          </td>
+          <td>{{ row.PM_ID }}</td>
+          <td>{{ row.Game_ID }}</td>
+          <td>{{ row.Call_List_ID }}</td>
+          <td>{{ row.Inning }}</td>
+          <td>{{ row.User_ID }}</td>
+          <td>{{ row.CardCount }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pid-table-wrap surface-card" *ngIf="packetDetails().length > 0">
+    <h2 class="pid-details__title">Packet Details</h2>
+    <table class="pid-table">
+      <thead>
+        <tr>
+          <th>PD_ID</th>
+          <th>PIDT</th>
+          <th>Card_ID</th>
+          <th>Status</th>
+          <th>Winner</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of packetDetails(); trackBy: trackByPdId">
+          <td>{{ row.PD_ID }}</td>
+          <td>{{ row.PIDT }}</td>
+          <td>{{ row.Card_ID }}</td>
+          <td>{{ row.Status || '—' }}</td>
+          <td>{{ row.Winner === null ? '—' : row.Winner ? 'Yes' : 'No' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <section class="qr-mst-print" aria-hidden="true">
+    <article
+      class="qr-mst-print__sheet"
+      *ngFor="let page of printPages(); let pageIndex = index">
+      <header class="qr-mst-print__head">
+        <h2>QR Packet Masters</h2>
+        <p>
+          Game {{ gameIdDraft() || '—' }} · Call List {{ callListIdDraft() || '—' }} · Card
+          {{ pageIndex + 1 }} of {{ printPages().length }}
+        </p>
+      </header>
+
+      <div class="qr-mst-print__bingo-labels">
+        <span *ngFor="let label of bingoColumnLabels">{{ label }}</span>
+      </div>
+
+      <div class="qr-mst-print__grid">
+        <div
+          class="qr-mst-print__cell"
+          *ngFor="let cell of page; trackBy: trackByPrintCell"
+          [class.qr-mst-print__cell--empty]="!cell">
+          <ng-container *ngIf="cell as master">
+            <div class="qr-mst-print__pidt">PIDT {{ master.PIDT }}</div>
+            <img
+              class="qr-mst-print__qr"
+              [src]="qrCodeImageUrl(buildQrLink(master.PIDT))"
+              [alt]="'QR code for PIDT ' + master.PIDT"
+              width="140"
+              height="140" />
+            <div class="qr-mst-print__link">{{ buildQrLink(master.PIDT) }}</div>
+          </ng-container>
+        </div>
+      </div>
+    </article>
+  </section>
+</section>

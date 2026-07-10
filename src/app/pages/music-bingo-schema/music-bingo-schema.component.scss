@@ -1,0 +1,25 @@
+.schema-page {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	min-height: calc(100vh - 8rem);
+}
+
+.schema-page__header h2 {
+	margin: 0.35rem 0;
+}
+
+.schema-page__header p {
+	margin: 0;
+	color: var(--text-muted);
+}
+
+.schema-page__frame {
+	flex: 1;
+	width: 100%;
+	min-height: 70vh;
+	border: 1px solid var(--border-soft);
+	border-radius: 1.25rem;
+	background: var(--panel-elevated);
+	box-shadow: var(--shadow-soft);
+}

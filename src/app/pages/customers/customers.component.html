@@ -1,0 +1,35 @@
+<section class="page customers">
+	<header class="page__header">
+		<span class="tag accent-iris">Customers</span>
+		<h2>Community + loyalty</h2>
+		<p>Spotlight who is loving ThaiOrange and what they are asking for next.</p>
+	</header>
+
+	<div class="segment-grid">
+		<article class="surface-card" *ngFor="let segment of segments">
+			<p class="eyebrow">Segment</p>
+			<h3>{{ segment.name }}</h3>
+			<p class="segment__size">{{ segment.size }}</p>
+			<p class="segment__momentum">{{ segment.momentum }}</p>
+			<p class="segment__note">{{ segment.note }}</p>
+			<button type="button" class="ghost full">Open playbook</button>
+		</article>
+	</div>
+
+	<article class="surface-card voices">
+		<header>
+			<p class="eyebrow">Voices to respond</p>
+			<h3>Feedback queue</h3>
+		</header>
+		<ul>
+			<li *ngFor="let voice of voices">
+				<div>
+					<p class="voice__guest">{{ voice.guest }}</p>
+					<p class="voice__summary">{{ voice.summary }}</p>
+					<p class="voice__action">{{ voice.action }}</p>
+				</div>
+				<button type="button" class="ghost small">Reply</button>
+			</li>
+		</ul>
+	</article>
+</section>

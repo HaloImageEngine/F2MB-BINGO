@@ -1,0 +1,15 @@
+Recommended commands
+npm run build:prod
+npm run deploy:prepare
+
+Then upload everything inside:
+deploy/bingo-djgogi-family/
+
+That includes:
+new files in dist/ from a fresh build
+but production still had an older deploy/ upload (or only part of a new upload)
+main-LTY7UQ2K.js on the server didn’t match the chunks in your local deploy/bingo-djgogi-family/ (main-CRPUVEX5.js), which points to mixed or partial deploys.
+
+Rule of thumb
+Build → prepare → upload the whole deploy/bingo-djgogi-family/ folder → hard refresh browser.
+

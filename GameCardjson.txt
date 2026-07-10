@@ -1,0 +1,44 @@
+{
+  "Call_List_Name": "CL3 G? I4",
+  "Call_List_Date": "2026-05-31T20:52:20.070Z",
+  "Call_List_Description": "First Game",
+  "Game_ID": 1,
+  "User_ID": 1038,
+  "InningNumber": 4,
+  "Call_List_Genre": "Pop",
+  "Call_List_Decade": "80s",
+  "Call_List_Era": "Retro",
+  "Call_List_SongCount": 1,
+  "Call_List_IsActive": true,
+  "NewCallListID": 0
+}
+
+{
+  "Call_List_Name": "CL4 G? I4",
+  "Call_List_Date": "2026-05-31T20:52:20.070Z",
+  "Call_List_Description": "2nd Calllist",
+  "Game_ID": 0,
+  "User_ID": 1038,
+  "InningNumber": 4,
+  "Call_List_Genre": "Country",
+  "Call_List_Decade": "80s",
+  "Call_List_Era": "Classic",
+  "Call_List_SongCount": 1,
+  "Call_List_IsActive": true,
+  "NewCallListID": 0
+}
+
+--------------------------------------------  Below is new Game.
+
+{
+  "User_ID": 1038,
+  "Call_List_ID": 7,
+  "Game_Number": 2,
+  "Game_Inning": 4,
+  "Game_Name": "CL 7 ",
+  "Game_StartTime": "2026-05-31T20:52:20.066Z",
+  "Game_EndTime": "2026-05-31T20:52:20.066Z",
+  "Game_WinPattern": "Line",
+  "Game_WinnerCard_ID": 0,
+  "Game_Status": "Pending"
+}
