@@ -110,6 +110,9 @@
       </div>
     </div>
     <div class="card-master-controls__hint">
+      <strong>Existing cards:</strong> {{ existingCardCount() ?? '—' }} ·
+      <strong>Call list songs (inning {{ inning() }}):</strong> {{ callListSongCount() ?? '—' }}
+      <br />
       <strong>Generate cards</strong> posts to <code>…/GenerateBingoCards_From_CLSongs/&#123;callListId&#125;/&#123;gameId&#125;/&#123;inning&#125;?cardCount=&amp;playlistSize=&amp;genre</code> (defaults 100 / 30).
       Load cards uses optional query params <code>calllistid</code> and <code>inning</code>.
     </div>

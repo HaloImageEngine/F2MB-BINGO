@@ -4,6 +4,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { catchError, defer, forkJoin, map, Observable, of, switchMap, tap, throwError } from 'rxjs';
 
 import { environment } from '../../environments/environment';
+import { CardCountByGameCallList } from '../models/card-count.model';
 import {
   BingoCallListCreate,
   BingoCallListDropdownByUser,
@@ -55,6 +56,8 @@ export class CallListService {
   private readonly updateGameByGidApiUrl = environment.bingoUpdateGameByGidApiUrl;
   private readonly generateBingoCardsFromClSongsApiUrl =
     environment.bingoGenerateBingoCardsFromClSongsApiUrl;
+  private readonly checkCardCountByGameCallListApiUrl =
+    environment.bingoCheckCardCountByGameCallListApiUrl;
 
   getMaxCallListId(userId?: number | null): Observable<number> {
     const url = userId && userId > 0 ? `${this.maxCallListIdApiUrl}/${userId}` : this.maxCallListIdApiUrl;
@@ -146,6 +149,23 @@ export class CallListService {
     }
 
     return ids.sort((left, right) => right - left);
+  }
+
+  /**
+   * `GET …/Bingo/Bingo/Check_CardCount_By_Game_CallList?request.call_List_ID=&request.game_ID=&request.inning=`
+   * Returns how many cards already exist for the game / call list / inning.
+   */
+  checkCardCountByGameCallList(
+    callListId: number,
+    gameId: number,
+    inning: number
+  ): Observable<CardCountByGameCallList> {
+    const params = new HttpParams()
+      .set('request.call_List_ID', String(callListId))
+      .set('request.game_ID', String(gameId))
+      .set('request.inning', String(inning));
+
+    return this.http.get<CardCountByGameCallList>(this.checkCardCountByGameCallListApiUrl, { params });
   }
 
   /**

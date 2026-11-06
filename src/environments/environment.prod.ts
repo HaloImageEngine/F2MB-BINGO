@@ -73,6 +73,7 @@ export const environment = {
   bingoLatestGamesByUserApiUrl: `${apiBaseUrl}Bingo/Game/Get_Latest_Games_by_UserID`,
   bingoUpdateGameByGidApiUrl: `${apiBaseUrl}Bingo/Game/Update_Game_byGID`,
   bingoGenerateBingoCardsFromClSongsApiUrl: `${apiBaseUrl}Bingo/CallList/GenerateBingoCards_From_CLSongs`,
+  bingoCheckCardCountByGameCallListApiUrl: `${apiBaseUrl}Bingo/Bingo/Check_CardCount_By_Game_CallList`,
   bingoCountArtistTypeApiUrl: `${apiBaseUrl}Bingo/Count/Get_Count_ArtistType`,
   bingoCountDecadeApiUrl: `${apiBaseUrl}Bingo/Count/Get_Count_Decade`,
   bingoCountEraApiUrl: `${apiBaseUrl}Bingo/Count/Get_Count_Era`,

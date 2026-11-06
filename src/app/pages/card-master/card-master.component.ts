@@ -15,6 +15,7 @@ import { PrintedCard, PrintedCardSquare } from '../../models/printed-card.model'
 import { AuthUserService } from '../../services/auth-user.service';
 import { CallListService } from '../../services/calllist.service';
 import { ConsoleContextService } from '../../services/console-context.service';
+import { DashboardSummaryService } from '../../services/dashboard-summary.service';
 import { PrintedCardsService } from '../../services/printed-cards.service';
 import { SongService } from '../../services/song.service';
 import { numericDraftFromValue, parsePositiveInteger } from '../../shared/numeric-input-draft';
@@ -41,6 +42,7 @@ export class CardMasterComponent implements OnInit {
   private readonly consoleContextService = inject(ConsoleContextService);
   private readonly songService = inject(SongService);
   private readonly authUserService = inject(AuthUserService);
+  private readonly dashboardSummaryService = inject(DashboardSummaryService);
 
   readonly currentUser = this.authUserService.user;
   readonly callListDropdownByUser = signal<BingoCallListDropdownByUser[]>([]);
@@ -61,6 +63,10 @@ export class CardMasterComponent implements OnInit {
   readonly cardCountDraft = signal(String(CARD_MASTER_DEFAULT_CARD_COUNT));
   readonly playlistSizeDraft = signal(String(CARD_MASTER_DEFAULT_PLAYLIST_SIZE));
 
+  /** `Total_Cards` for the selected Game / Call List / Inning; null while unknown. */
+  readonly existingCardCount = signal<number | null>(null);
+  /** `SongCount` for the selected Call List / Inning; null while unknown. */
+  readonly callListSongCount = signal<number | null>(null);
   readonly cards = signal<PrintedCard[]>([]);
   readonly loading = signal(false);
   readonly generatingCards = signal(false);
@@ -116,8 +122,12 @@ export class CardMasterComponent implements OnInit {
   commitGameIdFromDraft(): void {
     const parsed = parsePositiveInteger(this.gameIdDraft());
     if (parsed !== null) {
+      const changed = parsed !== this.gameId();
       this.gameId.set(parsed);
       this.gameIdDraft.set(String(parsed));
+      if (changed) {
+        this.refreshCounts();
+      }
       return;
     }
     this.gameIdDraft.set(String(this.gameId()));
@@ -130,8 +140,12 @@ export class CardMasterComponent implements OnInit {
   commitInningFromDraft(): void {
     const parsed = parsePositiveInteger(this.inningDraft());
     if (parsed !== null) {
+      const changed = parsed !== this.inning();
       this.inning.set(parsed);
       this.inningDraft.set(String(parsed));
+      if (changed) {
+        this.refreshCounts();
+      }
       return;
     }
     this.inningDraft.set(String(this.inning()));
@@ -194,16 +208,66 @@ export class CardMasterComponent implements OnInit {
     if (value === null || value === undefined || value === '') {
       this.callListId.set(null);
       this.syncConsoleContext();
+      this.refreshCounts();
       return;
     }
     const n = typeof value === 'string' ? Number.parseInt(value, 10) : Number(value);
     if (!Number.isInteger(n) || n < 1) {
       this.callListId.set(null);
       this.syncConsoleContext();
+      this.refreshCounts();
       return;
     }
     this.callListId.set(n);
     this.syncConsoleContext();
+    this.refreshCounts();
+  }
+
+  /**
+   * Checks existing card count (`Check_CardCount_By_Game_CallList`) and call-list song count
+   * (`ups_Get_Count_CallListSongs_By_CLID_Inning`) for the current Game / Call List / Inning.
+   */
+  refreshCounts(): void {
+    const callListId = this.callListId();
+    const gameId = this.gameId();
+    const inning = this.inning();
+
+    this.existingCardCount.set(null);
+    this.callListSongCount.set(null);
+
+    if (callListId === null || callListId < 1 || gameId < 1 || inning < 1) {
+      return;
+    }
+
+    this.callListService
+      .checkCardCountByGameCallList(callListId, gameId, inning)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError(err => {
+          console.error('Check_CardCount_By_Game_CallList failed', err);
+          return of(null);
+        })
+      )
+      .subscribe(result => {
+        if (callListId === this.callListId() && gameId === this.gameId() && inning === this.inning()) {
+          this.existingCardCount.set(result ? result.Total_Cards : null);
+        }
+      });
+
+    this.dashboardSummaryService
+      .getCallListSongCount(callListId, inning)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError(err => {
+          console.error('Get_Count_CallListSongs_By_CLID_Inning failed', err);
+          return of(null);
+        })
+      )
+      .subscribe(result => {
+        if (callListId === this.callListId() && inning === this.inning()) {
+          this.callListSongCount.set(result ? result.SongCount : null);
+        }
+      });
   }
 
   generateCards(): void {
@@ -234,6 +298,12 @@ export class CardMasterComponent implements OnInit {
     if (!genre) {
       this.generateNotice.set(null);
       this.error.set('Select a genre before generating cards.');
+      return;
+    }
+
+    if (this.callListSongCount() === 0) {
+      this.generateNotice.set(null);
+      this.error.set(`Call list ${callListId} has no songs for inning ${inning}. Add songs before generating cards.`);
       return;
     }
 
@@ -279,6 +349,7 @@ export class CardMasterComponent implements OnInit {
           Inning: inning
         });
 
+        this.refreshCounts();
         this.loadCards();
       });
   }
@@ -379,11 +450,13 @@ export class CardMasterComponent implements OnInit {
 
     const current = this.callListId();
     if (current !== null && ids.includes(current)) {
+      this.refreshCounts();
       return;
     }
 
     this.callListId.set(ids[0]);
     this.syncConsoleContext();
+    this.refreshCounts();
   }
 
   private syncConsoleContext(): void {
